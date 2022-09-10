@@ -1,0 +1,27 @@
+name: Dependency Audit
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [Backend, Frontend, admin]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: npm audit (${{ matrix.app }})
+        working-directory: ${{ matrix.app }}
+        # Non-blocking for now — several deps (CRA 5/react-scripts) carry
+        # long-standing advisories with no upstream fix yet. Flip this off
+        # once the backlog of existing findings has been triaged.
+        continue-on-error: true
+        run: npm audit --audit-level=high

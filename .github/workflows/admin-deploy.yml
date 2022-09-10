@@ -1,0 +1,40 @@
+name: Build and Deploy Admin Static Web App
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "admin/**"
+      - ".github/workflows/admin-deploy.yml"
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main, master]
+    paths:
+      - "admin/**"
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_ADMIN_SWA_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: "/admin"
+          output_location: "build"
+
+  close-pull-request:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close pull request staging environment
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_ADMIN_SWA_TOKEN }}
+          action: close
