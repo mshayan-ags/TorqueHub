@@ -1,0 +1,74 @@
+/* Basic styling for the element */
+.zoom-effect {
+	transition: transform 2s ease; /* Smooth transition for zoom effect */
+}
+
+/* Zoom effect on hover */
+.zoom-effect:hover {
+	transform: scale(5); /* Scale the element to 120% of its original size */
+}
+/* Keyframes for zoom effect */
+@keyframes zoomIn {
+	from {
+		transform: scale(5); /* Initial size */
+	}
+	to {
+		transform: scale(1); /* Final size */
+	}
+}
+
+/* Apply animation to the element */
+.zoom-effect {
+	animation: zoomIn 2s ease forwards; /* Duration and easing for animation */
+}
+
+.zoom-effect-close {
+	transition: transform 0.5s ease; /* Smooth transition for zoom effect */
+}
+
+/* Zoom effect on hover */
+.zoom-effect-close:hover {
+	transform: scale(0); /* Scale the element to 120% of its original size */
+}
+
+/* Keyframes for zoom effect */
+@keyframes zoomOut {
+	from {
+		transform: opacity(1); /* Initial size */
+	}
+	to {
+		transform: opacity(0); /* Final size */
+	}
+}
+
+/* Apply animation to the element */
+.zoom-effect-close {
+	animation: zoomOut 0.5s ease forwards; /* Duration and easing for animation */
+}
+
+/* Modern fade-in-up animation */
+@keyframes fade-in-up {
+	from {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-in-up {
+	animation: fade-in-up 0.6s ease-out forwards;
+	opacity: 0;
+}
+
+/* Float animation for hero elements */
+@keyframes float {
+	0%, 100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-20px);
+	}
+}
