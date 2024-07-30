@@ -1,0 +1,98 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+@import url("https://fonts.googleapis.com/css2?family=Actor&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Actor&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Advent+Pro:ital,wght@1,100&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Tomorrow:wght@900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap");
+
+* {
+	padding: 0px;
+	margin: 0px;
+}
+
+/* Custom animations for Profile page */
+@keyframes shimmer {
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
+}
+
+@keyframes fadeIn {
+	0% {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes float {
+	0%, 100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
+}
+
+@keyframes pulse-glow {
+	0%, 100% {
+		box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+	}
+	50% {
+		box-shadow: 0 0 40px rgba(249, 115, 22, 0.6);
+	}
+}
+
+@keyframes gradient-shift {
+	0%, 100% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+}
+
+@keyframes slide-up {
+	0% {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeInUp {
+	0% {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Smooth scrolling for all elements */
+html {
+	scroll-behavior: smooth;
+}
+
+/* Premium backdrop blur support */
+@supports (backdrop-filter: blur(10px)) {
+	.backdrop-blur-premium {
+		backdrop-filter: blur(10px) saturate(150%);
+	}
+}

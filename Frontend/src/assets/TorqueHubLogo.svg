@@ -1,0 +1,84 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Modern Gradient -->
+    <linearGradient id="modernGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#fb923c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c2410c;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Shimmer Effect -->
+    <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f97316;stop-opacity:0.3" />
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#f97316;stop-opacity:0.3" />
+      <animate attributeName="x1" values="-100%;200%" dur="3s" repeatCount="indefinite" />
+      <animate attributeName="x2" values="0%;300%" dur="3s" repeatCount="indefinite" />
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Circular Badge Background -->
+  <circle cx="30" cy="30" r="24" fill="url(#modernGradient)" opacity="0.15" filter="url(#glow)">
+    <animate attributeName="r" values="24;26;24" dur="3s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Modern Geometric Gear / Torque Mark -->
+  <g transform="translate(30, 30)" filter="url(#glow)">
+    <!-- Rotating outer gear -->
+    <g fill="url(#modernGradient)" opacity="0.95">
+      <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="12s" repeatCount="indefinite" />
+      <path d="M -3.2 -16 L 3.2 -16 L 4.6 -10.4 L -4.6 -10.4 Z" />
+      <path d="M -3.2 16 L 3.2 16 L 4.6 10.4 L -4.6 10.4 Z" />
+      <path d="M -16 -3.2 L -16 3.2 L -10.4 4.6 L -10.4 -4.6 Z" />
+      <path d="M 16 -3.2 L 16 3.2 L 10.4 4.6 L 10.4 -4.6 Z" />
+      <path d="M -11.3 -11.3 L -6.7 -6.7 L -8.1 -3.4 L -14.6 -8.1 Z" />
+      <path d="M 11.3 11.3 L 6.7 6.7 L 8.1 3.4 L 14.6 8.1 Z" />
+      <path d="M -11.3 11.3 L -6.7 6.7 L -8.1 3.4 L -14.6 8.1 Z" />
+      <path d="M 11.3 -11.3 L 6.7 -6.7 L 8.1 -3.4 L 14.6 -8.1 Z" />
+      <circle cx="0" cy="0" r="11" />
+    </g>
+    <!-- Center hub -->
+    <circle cx="0" cy="0" r="5.5" fill="white" opacity="0.95" />
+    <circle cx="0" cy="0" r="2.4" fill="url(#modernGradient)" />
+  </g>
+
+  <!-- Ultra-Modern Text -->
+  <g>
+    <text x="58" y="38" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif"
+          font-size="27" font-weight="900" letter-spacing="-1.5">
+      <tspan fill="url(#modernGradient)">Torque</tspan>
+      <tspan fill="#c2410c" font-weight="800">Hub</tspan>
+    </text>
+
+    <!-- Shimmer overlay on text -->
+    <text x="58" y="38" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif"
+          font-size="27" font-weight="900" letter-spacing="-1.5" fill="url(#shimmer)" opacity="0.6">
+      <tspan>TorqueHub</tspan>
+    </text>
+  </g>
+
+  <!-- Sleek Accent Line -->
+  <rect x="58" y="44" width="0" height="3" fill="url(#modernGradient)" rx="1.5">
+    <animate attributeName="width" values="0;110;0" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0.8;0" dur="4s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Minimal Sparkle -->
+  <circle cx="178" cy="22" r="2" fill="#f97316" opacity="0">
+    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1;3;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="188" cy="28" r="2" fill="#fb923c" opacity="0">
+    <animate attributeName="opacity" values="0;1;0" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1;2.5;1" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>

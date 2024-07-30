@@ -1,0 +1,60 @@
+{
+  "name": "torquehub-storefront",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@headlessui/react": "^1.7.18",
+    "@heroicons/react": "^2.1.3",
+    "@stripe/react-stripe-js": "^2.7.0",
+    "@stripe/stripe-js": "^3.3.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@upscalerjs/esrgan-thick": "^1.0.0-beta.16",
+    "aos": "^2.3.4",
+    "axios": "^1.6.8",
+    "firebase": "^11.4.0",
+    "history": "^5.3.0",
+    "localforage": "^1.10.0",
+    "match-sorter": "^6.3.4",
+    "moment": "^2.30.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.2.1",
+    "react-router-dom": "^6.22.3",
+    "react-scripts": "5.0.1",
+    "react-slick": "^0.29.0",
+    "slick-carousel": "^1.8.1",
+    "socket.io-client": "^4.8.3",
+    "sort-by": "^1.2.0",
+    "sweetalert": "^2.1.2",
+    "sweetalert2": "^11.14.0",
+    "tailwindcss": "^3.4.1",
+    "upscaler": "^1.0.0-beta.19",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
