@@ -1,0 +1,14 @@
+.claude
+build/
+node_modules/
+build
+.env
+.env.local
+.DS_Store
+npm-debug.log*
+dist/
+package-lock.json
+.env
+.env.docker
+!.env.docker.example
+.env*
