@@ -1,0 +1,43 @@
+.MuiDataGrid-columnHeaderTitle {
+  position: relative;
+  text-align: left;
+  opacity: 0.7;
+  background: transparent;
+  color: #7b809a;
+  border-radius: none;
+  box-shadow: none;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.MuiDataGrid-cellContent {
+  text-align: left;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  opacity: 1;
+  background: transparent;
+  color: #344767;
+  border-radius: none;
+  box-shadow: none;
+  font-size: 0.875rem;
+  border-bottom: 0.0625rem solid #f0f2f5;
+  margin: 0;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 300;
+  line-height: 1.25;
+  letter-spacing: 0.03333em;
+  opacity: 1;
+  text-transform: none;
+  vertical-align: unset;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  color: #7b809a;
+  font-weight: 600;
+}
