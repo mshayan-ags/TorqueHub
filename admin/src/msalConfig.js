@@ -5,3 +5,7 @@ export const msalConfig = {
     redirectUri: process.env.REACT_APP_MSAL_REDIRECT_URI,
   }
 };
+
+export const loginRequest = {
+  scopes: ["openid", "profile"],
+};
