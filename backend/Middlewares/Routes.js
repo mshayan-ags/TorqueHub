@@ -1,6 +1,8 @@
 const { app } = require("./Server");
 const User = require("../routes/User");
+const UserSSO = require("../routes/UserSSO");
 const Admin = require("../routes/Admin");
+const AdminSSO = require("../routes/AdminSSO");
 const Brand = require("../routes/Brand");
 const Category = require("../routes/Category");
 const Product = require("../routes/Product");
@@ -13,8 +15,11 @@ const Wishlist = require("../routes/Wishlist");
 const Blog = require("../routes/Blog");
 const Review = require("../routes/Review");
 const { GetImage } = require("../routes/Image");
+const Health = require("../routes/Health");
 
+app.use(Health);
 app.use(User);
+app.use(UserSSO);
 app.use(Sale);
 app.use(Coupon);
 app.use(Discount);
@@ -24,6 +29,7 @@ app.use(Product);
 app.use(Category);
 app.use(Brand);
 app.use(Admin);
+app.use(AdminSSO);
 app.use(Wishlist);
 app.use(Blog);
 app.use(Review);

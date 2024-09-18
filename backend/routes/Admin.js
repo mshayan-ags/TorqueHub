@@ -3,16 +3,22 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { authenticator } = require("otplib");
 const qrcode = require("qrcode");
-const { APP_SECRET, getAdminId } = require("../utils/AuthCheck");
+const { APP_SECRET, getAdminId, getTokenPayload } = require("../utils/AuthCheck");
 const { Router } = require("express");
 const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
 const { SaveImageDB } = require("./Image");
 const { default: mongoose } = require("mongoose");
 const { authLimiter } = require("../Middlewares/RateLimiters");
+const { requirePermission } = require("../Middlewares/RequirePermission");
 
 const router = Router();
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-router.post("/Create-Admin", async (req, res) => {
+// Creating a new admin account is itself a privileged action — it must
+// never be reachable without an existing, permissioned admin session. (This
+// route previously had no auth check at all, meaning anyone could
+// self-register as an Admin; that was a critical bug, not a design choice.)
+router.post("/Create-Admin", authLimiter, requirePermission("manageAdmins"), async (req, res) => {
 	try {
 
 		const Credentials = req.body;
@@ -33,7 +39,11 @@ router.post("/Create-Admin", async (req, res) => {
 			email: Credentials?.email,
 			phoneNumber: Credentials?.phoneNumber,
 			password: password,
-			Role: Credentials?.Role
+			Role: Credentials?.Role,
+			// The creating (already-permissioned) admin decides what the new
+			// admin can do; default to no permissions rather than silently
+			// inheriting anything.
+			Responsiblities: Credentials?.Responsiblities || {}
 		});
 
 		if (Credentials?.profilePicture?.name) {
@@ -50,12 +60,11 @@ router.post("/Create-Admin", async (req, res) => {
 			}
 		}
 		await newAdmin.save();
-		const token = jwt.sign({ id: newAdmin?._id, Role: newAdmin?.Role }, APP_SECRET);
 
 		res.status(200).json({
-			token,
 			status: 200,
-			message: "Admin Created in Succesfully"
+			message: "Admin Created in Succesfully",
+			id: newAdmin?._id
 		});
 	} catch (error) {
 		if (error?.code == 11000) {
@@ -152,7 +161,7 @@ router.post("/Login-Admin", authLimiter, async (req, res) => {
 					});
 				}
 
-				const token = jwt.sign({ id: searchAdmin?._id, Role: searchAdmin?.Role }, APP_SECRET);
+				const token = jwt.sign({ id: searchAdmin?._id, Role: searchAdmin?.Role }, APP_SECRET, { expiresIn: JWT_EXPIRES_IN });
 				res.status(200).json({
 					token,
 					status: 200,
@@ -181,7 +190,7 @@ router.post("/Login-Admin/Verify-2FA", authLimiter, async (req, res) => {
 
 		let payload;
 		try {
-			payload = jwt.verify(Credentials?.pendingToken, APP_SECRET);
+			payload = getTokenPayload(Credentials?.pendingToken);
 		} catch (e) {
 			return res.status(401).json({ status: 401, message: "2FA session expired, please log in again" });
 		}
@@ -200,7 +209,7 @@ router.post("/Login-Admin/Verify-2FA", authLimiter, async (req, res) => {
 			return res.status(401).json({ status: 401, message: "Invalid 2FA code" });
 		}
 
-		const token = jwt.sign({ id: searchAdmin?._id, Role: searchAdmin?.Role }, APP_SECRET);
+		const token = jwt.sign({ id: searchAdmin?._id, Role: searchAdmin?.Role }, APP_SECRET, { expiresIn: JWT_EXPIRES_IN });
 		res.status(200).json({
 			token,
 			status: 200,
@@ -326,7 +335,7 @@ router.get("/GetAdminInfo/:id", async (req, res) => {
 	}
 });
 
-router.get("/GetAllAdmins", async (req, res) => {
+router.get("/GetAllAdmins", requirePermission("manageAdmins"), async (req, res) => {
 	try {
 		const { id, message } = await getAdminId(req);
 		if (id) {

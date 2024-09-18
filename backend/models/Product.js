@@ -134,6 +134,9 @@ const ProductSchema = new mongoose.Schema(
 ProductSchema.index({ brand: 1 });
 ProductSchema.index({ category: 1 });
 ProductSchema.index({ isArchive: 1 });
+// Powers the $text-scored branch of GET /SearchProducts, for multi-word
+// queries where a plain substring regex would miss any-word matches.
+ProductSchema.index({ name: "text", description: "text", ProductCode: "text" });
 
 const Product = mongoose.model("Product", ProductSchema);
 

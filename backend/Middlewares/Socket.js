@@ -1,8 +1,7 @@
-const jwt = require("jsonwebtoken");
 const { User } = require("../models/User");
 const { Admin } = require("../models/Admin");
 const { Sale } = require("../models/Sale");
-const { APP_SECRET } = require("../utils/AuthCheck");
+const { getTokenPayload } = require("../utils/AuthCheck");
 
 module.exports = function attachSocketHandlers(io) {
 	io.use(async (socket, next) => {
@@ -12,7 +11,7 @@ module.exports = function attachSocketHandlers(io) {
 				return next(new Error("Authentication required"));
 			}
 
-			const payload = jwt.verify(token, APP_SECRET);
+			const payload = getTokenPayload(token);
 			const admin = await Admin.findOne({ _id: payload?.id, Role: payload?.Role });
 
 			if (admin?._id) {

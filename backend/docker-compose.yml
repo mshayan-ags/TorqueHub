@@ -16,6 +16,24 @@ services:
       AZURE_TENANT_ID: "${AZURE_TENANT_ID}"
       AZURE_CLIENT_ID: "${AZURE_CLIENT_ID}"
       AZURE_CLIENT_SECRET: "${AZURE_CLIENT_SECRET}"
+      # Set MONGODB_URI=mongodb://mongo:27017/torquehub in .env.docker to
+      # point the api container at the local `mongo` service below instead
+      # of Cosmos DB / a real MongoDB URI.
     env_file:
       - .env.docker
+    depends_on:
+      - mongo
     restart: unless-stopped
+
+  # Local-only MongoDB for `docker compose up` — not used in production,
+  # where MONGODB_URI/COSMOS_SECRET_IDENTIFIER points at the real database.
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo-data:

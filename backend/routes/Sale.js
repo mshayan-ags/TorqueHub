@@ -1,8 +1,10 @@
+const mongoose = require("mongoose");
 const { Sale } = require("../models/Sale");
 const { getAdminId, getUserId } = require("../utils/AuthCheck");
 const { Router } = require("express");
 const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
 const { createSaleFromOrder } = require("../utils/orderFulfillment");
+const { authLimiter } = require("../Middlewares/RateLimiters");
 
 const router = Router();
 
@@ -282,6 +284,33 @@ router.get("/Dashboard-Stats", async (req, res) => {
 				recentOrders: sales.slice(0, 10)
 			}
 		});
+	} catch (error) {
+		res.status(500).json({ status: 500, message: error });
+	}
+});
+
+router.get("/Track-Guest-Order", authLimiter, async (req, res) => {
+	try {
+		const { orderId, email } = req.query;
+		if (!orderId || !email) {
+			return res.status(400).json({ status: 400, message: "orderId and email are required" });
+		}
+
+		if (!mongoose.isValidObjectId(orderId)) {
+			return res.status(404).json({ status: 404, message: "Order not found" });
+		}
+
+		const sale = await Sale.findOne({ _id: orderId })
+			.populate(["User", "Address", { path: "Product", populate: [{ path: "product", populate: ["images"] }] }]);
+
+		// A generic 404 on either a non-existent order or an email mismatch —
+		// distinguishing the two would let this endpoint be used to enumerate
+		// valid order IDs or confirm which email placed a given order.
+		if (!sale?._id || sale?.User?.email?.toLowerCase() !== String(email).toLowerCase().trim()) {
+			return res.status(404).json({ status: 404, message: "Order not found" });
+		}
+
+		res.status(200).json({ status: 200, data: sale });
 	} catch (error) {
 		res.status(500).json({ status: 500, message: error });
 	}

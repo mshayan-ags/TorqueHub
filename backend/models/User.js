@@ -53,6 +53,18 @@ const UserSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false
 		},
+		isVerified: {
+			type: Boolean,
+			default: false
+		},
+		otp: {
+			type: String,
+			select: false
+		},
+		otpExpiresAt: {
+			type: Date,
+			select: false
+		},
 		Review: {
 			type: [mongoose.Schema.Types.ObjectId],
 			ref: "Review"

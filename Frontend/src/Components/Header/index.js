@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { withAuthContext } from "../../context/Auth";
 import { withCartContext } from "../../context/Cart";
 import { withWishlistContext } from "../../context/Wishlist";
+import { withCompareContext } from "../../context/Compare";
 import Logo from "../../assets/TorqueHubLogo.svg";
 import "./index.css";
 import {
@@ -12,6 +13,8 @@ import {
   FaBars,
   FaTimes,
   FaSignOutAlt,
+  FaSearch,
+  FaBalanceScale,
 } from "react-icons/fa";
 
 const navLinks = [
@@ -20,12 +23,35 @@ const navLinks = [
   { label: "About", path: "/About" },
 ];
 
-function Header({ Token, setToken, currUser, MenuOpen, setMenuOpen, Cart, Wishlist }) {
+function Header({ Token, setToken, currUser, MenuOpen, setMenuOpen, Cart, Wishlist, Compare }) {
   const navigate = useNavigate();
   const [accountOpen, setAccountOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef(null);
 
   const cartCount = Cart?.length || 0;
   const wishlistCount = Wishlist?.length || 0;
+  const compareCount = Compare?.length || 0;
+
+  useEffect(() => {
+    if (searchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [searchOpen]);
+
+  // Debounced: waits for the user to pause typing before navigating, so
+  // Category.js's search fetch doesn't fire on every keystroke.
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    const timeout = setTimeout(() => {
+      if (searchTerm.trim()) {
+        navigate(`/Category?q=${encodeURIComponent(searchTerm.trim())}`);
+      }
+    }, 400);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -57,6 +83,49 @@ function Header({ Token, setToken, currUser, MenuOpen, setMenuOpen, Cart, Wishli
 
         {/* Right Icons */}
         <div className="flex items-center gap-4 md:gap-6">
+          {/* Search */}
+          <div className="relative hidden md:flex items-center">
+            {searchOpen ? (
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchTerm.trim()) {
+                    navigate(`/Category?q=${encodeURIComponent(searchTerm.trim())}`);
+                  }
+                  if (e.key === "Escape") {
+                    setSearchOpen(false);
+                    setSearchTerm("");
+                  }
+                }}
+                onBlur={() => {
+                  if (!searchTerm.trim()) setSearchOpen(false);
+                }}
+                placeholder="Search parts..."
+                className="w-48 lg:w-64 px-4 py-2 text-sm border border-[#d2d2d7] rounded-full outline-none focus:border-[#f97316] transition-colors"
+              />
+            ) : (
+              <FaSearch
+                className="w-5 h-5 cursor-pointer text-gray-700 hover:text-[#c2410c] transition-colors"
+                onClick={() => setSearchOpen(true)}
+              />
+            )}
+          </div>
+
+          <div
+            className="relative cursor-pointer text-gray-700 hover:text-[#c2410c] transition-colors"
+            onClick={() => navigate("/Compare")}
+          >
+            <FaBalanceScale className="w-5 h-5 md:w-6 md:h-6" />
+            {compareCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#c2410c] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                {compareCount}
+              </span>
+            )}
+          </div>
+
           <div
             className="relative cursor-pointer text-gray-700 hover:text-[#c2410c] transition-colors"
             onClick={() => navigate("/Wishlist")}
@@ -146,6 +215,26 @@ function Header({ Token, setToken, currUser, MenuOpen, setMenuOpen, Cart, Wishli
       {/* Mobile Menu */}
       {MenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 flex flex-col gap-4">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && searchTerm.trim()) {
+                setMenuOpen(false);
+                navigate(`/Category?q=${encodeURIComponent(searchTerm.trim())}`);
+              }
+            }}
+            placeholder="Search parts..."
+            className="w-full px-4 py-2.5 text-sm border border-[#d2d2d7] rounded-full outline-none focus:border-[#f97316] transition-colors"
+          />
+          <Link
+            to="/Compare"
+            onClick={() => setMenuOpen(false)}
+            className="text-gray-700 font-semibold text-sm uppercase tracking-wide"
+          >
+            Compare{compareCount > 0 ? ` (${compareCount})` : ""}
+          </Link>
           {navLinks.map((link) => (
             <Link
               key={link.path}
@@ -179,4 +268,4 @@ function Header({ Token, setToken, currUser, MenuOpen, setMenuOpen, Cart, Wishli
   );
 }
 
-export default withWishlistContext(withCartContext(withAuthContext(Header)));
+export default withCompareContext(withWishlistContext(withCartContext(withAuthContext(Header))));

@@ -1,20 +1,34 @@
 require("./setup");
 const request = require("supertest");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const { app } = require("../Middlewares/Server");
 const { Product } = require("../models/Product");
 const { Brand } = require("../models/Brand");
 const { Category } = require("../models/Category");
+const { Admin } = require("../models/Admin");
+const { APP_SECRET } = require("../utils/AuthCheck");
 
 async function createUser(email) {
 	const res = await request(app).post("/SignUp").send({ name: email, email, password: "password123" });
 	return { token: res.body.token, id: res.body.id };
 }
 
+// Created directly via the model (not the now-permission-gated
+// /Create-Admin HTTP endpoint, which requires an already-authenticated
+// manageAdmins admin — bootstrapping the very first admin isn't its job).
+// Mirrors createProduct()'s existing rationale for the same pattern.
 async function createAdmin(email) {
-	const res = await request(app)
-		.post("/Create-Admin")
-		.send({ name: email, email, phoneNumber: Math.floor(Math.random() * 1e9), Role: "Admin", password: "password123" });
-	return res.body.token;
+	const password = await bcrypt.hash("password123", 15);
+	const admin = await Admin.create({
+		name: email,
+		email,
+		phoneNumber: Math.floor(Math.random() * 1e9),
+		Role: "Admin",
+		password,
+		Responsiblities: { manageProducts: true, manageOrders: true, manageUsers: true, manageAdmins: true, manageContent: true }
+	});
+	return jwt.sign({ id: admin._id, Role: admin.Role }, APP_SECRET, { expiresIn: "7d" });
 }
 
 // Created directly via the model (not the /Create-Product HTTP endpoint)

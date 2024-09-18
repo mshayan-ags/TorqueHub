@@ -13,6 +13,8 @@ const Checkout = lazy(() => import("./Pages/Checkout"));
 const ProductDetails = lazy(() => import("./Pages/ProductDetails"));
 const Wishlist = lazy(() => import("./Pages/Wishlist"));
 const OrderTracking = lazy(() => import("./Pages/OrderTracking"));
+const TrackOrder = lazy(() => import("./Pages/TrackOrder"));
+const Compare = lazy(() => import("./Pages/Compare"));
 const SignIn = lazy(() => import("./Pages/Singin"));
 const SignUp = lazy(() => import("./Pages/Signup"));
 const Payment = lazy(() => import("./Pages/Payment"));
@@ -108,6 +110,14 @@ const App = () => {
     {
       path: "/OrderTracking/:id",
       element: <OrderTracking />,
+    },
+    {
+      path: "/Track-Order",
+      element: <TrackOrder />,
+    },
+    {
+      path: "/Compare",
+      element: <Compare />,
     },
     {
       path: "/SignIn",

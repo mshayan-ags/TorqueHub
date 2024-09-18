@@ -30,7 +30,12 @@ async function CheckAllRequiredFieldsAvailaible(req, fields, res) {
   });
 }
 
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 module.exports = {
   filterArrayOfObjectAndRemoveRepetitions,
   CheckAllRequiredFieldsAvailaible,
+  escapeRegex,
 };

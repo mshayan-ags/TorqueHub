@@ -1,11 +1,13 @@
 ﻿import React, { useEffect, useState } from "react";
+import axios from "axios";
 import BreadsCrumbs from "../Components/BreadCrumbs";
 import CustomCard from "../Components/Card";
 import Filter from "../Components/Filter";
 import Footer from "../Components/Footer";
 import Headers from "../Components/Header/index";
 import { withProductContext } from "../context/Product";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { BackendLink } from "../link";
 import { FaFilter, FaTh, FaThList, FaBoxOpen } from "react-icons/fa";
 import { FaFilterCircleXmark } from "react-icons/fa6";
 import { MdClose, MdChevronLeft, MdChevronRight } from "react-icons/md";
@@ -23,6 +25,8 @@ const initialValue = {
 function Category({ AllProduct, GetAllProduct }) {
     const { name } = useParams()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const q = searchParams.get("q")
     useEffect(() => {
         window.scrollTo({
             top: 0,
@@ -33,13 +37,37 @@ function Category({ AllProduct, GetAllProduct }) {
 
     const [FilterValue, setFilterValue] = useState(initialValue)
     const [Products, setProducts] = useState([]);
+    const [SearchResults, setSearchResults] = useState(null);
+    const [SearchLoading, setSearchLoading] = useState(false);
     const [From, setFrom] = useState(0);
     const [Open, setOpen] = useState(false);
 
+    // A ?q= search hits the backend for relevance-ranked results (name,
+    // code, description, brand, category) instead of the client-side
+    // catalog-wide filtering below, which only does a plain name/category
+    // substring match.
     useEffect(() => {
-        if (!AllProduct || !FilterValue) { setProducts((AllProduct)); return; } // Handle null or undefined values
+        if (!q) { setSearchResults(null); return; }
+        setSearchLoading(true);
+        axios
+            .get(`${BackendLink}/SearchProducts`, { params: { q } })
+            .then((res) => {
+                setSearchLoading(false);
+                if (res?.data?.status == 200) {
+                    setSearchResults(res?.data?.data || []);
+                }
+            })
+            .catch(() => {
+                setSearchLoading(false);
+                setSearchResults([]);
+            });
+    }, [q]);
 
-        let filteredProducts = [...(AllProduct)]; // Copy all products initially
+    useEffect(() => {
+        const baseList = q ? SearchResults : AllProduct;
+        if (!baseList || !FilterValue) { setProducts(baseList); return; } // Handle null or undefined values
+
+        let filteredProducts = [...(baseList)]; // Copy the base list initially
         if (name) {
             filteredProducts = filteredProducts.filter(product => {
                 if (product.name?.toLowerCase()?.includes(name?.toLowerCase())) {
@@ -75,7 +103,7 @@ function Category({ AllProduct, GetAllProduct }) {
 
         setProducts(filteredProducts);
         setFrom(0)
-    }, [AllProduct, FilterValue, name]);
+    }, [AllProduct, SearchResults, FilterValue, name, q]);
 
     return (
         <React.Fragment>
@@ -88,8 +116,12 @@ function Category({ AllProduct, GetAllProduct }) {
                     <div className="w-[90%] md:w-[83%]">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pb-6 border-b border-[#d2d2d7]">
                             <div>
-                                <h1 className="text-3xl md:text-5xl font-semibold text-[#1d1d1f] tracking-tight capitalize">{name || "All Products"}</h1>
-                                <p className="text-[#6e6e73] mt-2 text-sm md:text-base">{Products?.length} products available</p>
+                                <h1 className="text-3xl md:text-5xl font-semibold text-[#1d1d1f] tracking-tight capitalize">
+                                    {q ? `Results for "${q}"` : (name || "All Products")}
+                                </h1>
+                                <p className="text-[#6e6e73] mt-2 text-sm md:text-base">
+                                    {SearchLoading ? "Searching..." : `${Products?.length || 0} products available`}
+                                </p>
                             </div>
 
                             {/* Breadcrumbs */}

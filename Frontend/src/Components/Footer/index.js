@@ -41,6 +41,7 @@ function Footer({ }) {
 						<span className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={() => navigate("/About")}>About</span>
 						<span className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={() => navigate("/Blog")}>Blog</span>
 						<span className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={() => navigate("/Profile")}>My Profile</span>
+						<span className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={() => navigate("/Track-Order")}>Track an Order</span>
 					</div>
 
 					<div className="flex gap-4">

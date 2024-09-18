@@ -3,13 +3,14 @@ import Dog from "../../assets/AutoPartFallback.svg";
 import { useNavigate } from "react-router-dom";
 import { withCartContext } from "../../context/Cart";
 import { withWishlistContext } from "../../context/Wishlist";
+import { withCompareContext } from "../../context/Compare";
 import { ImageCloud } from "../../link";
 import { BsFillBasket3Fill } from "react-icons/bs";
 import { IoIosRemoveCircleOutline } from "react-icons/io";
 import { HiMinus, HiPlus } from "react-icons/hi";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaBalanceScale } from "react-icons/fa";
 
-const CustomCard = ({ data, AddToCart, isItemCart, RemoveItemCart, UpdateItemCart, getItemCart, isWishlisted, ToggleWishlist }) => {
+const CustomCard = ({ data, AddToCart, isItemCart, RemoveItemCart, UpdateItemCart, getItemCart, isWishlisted, ToggleWishlist, isCompared, ToggleCompare }) => {
 	const navigate = useNavigate()
 	const [quantity, setQuantity] = useState(1)
 	useEffect(() => {
@@ -105,6 +106,21 @@ const CustomCard = ({ data, AddToCart, isItemCart, RemoveItemCart, UpdateItemCar
 					)}
 				</div>
 
+				<div
+					onClick={(e) => {
+						e.stopPropagation();
+						ToggleCompare && ToggleCompare(data?._id);
+					}}
+					title={isCompared && isCompared(data?._id) ? "Remove from compare" : "Add to compare"}
+					className={`flex md:w-[44px] md:h-[44px] w-[40px] h-[40px] items-center justify-center rounded-full border transition-colors duration-200 cursor-pointer ${isCompared && isCompared(data?._id) ? "border-[#f97316]" : "border-[#d2d2d7] hover:border-[#f97316]"
+						}`}
+				>
+					<FaBalanceScale
+						className={`md:w-[16px] md:h-[16px] w-[12px] h-[12px] ${isCompared && isCompared(data?._id) ? "text-[#f97316]" : "text-[#6e6e73]"
+							}`}
+					/>
+				</div>
+
 				<div className="border border-[#d2d2d7] gap-2 md:gap-6 md:h-12 h-10 rounded-full flex flex-row items-center justify-center md:px-[20px] px-[8px] bg-white">
 					<HiMinus
 						className="md:h-[16px] md:w-[16px] h-[14px] w-[14px] cursor-pointer text-[#1d1d1f]"
@@ -153,4 +169,4 @@ const CustomCard = ({ data, AddToCart, isItemCart, RemoveItemCart, UpdateItemCar
 	);
 };
 
-export default withWishlistContext(withCartContext(CustomCard));
+export default withCompareContext(withWishlistContext(withCartContext(CustomCard)));

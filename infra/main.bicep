@@ -24,6 +24,24 @@ param projectName string = 'torquehub'
 @description('Placeholder container image used on first deploy, before any real image has been pushed to the ACR created below. The backend-deploy.yml workflow overwrites this on every push via `az containerapp update`.')
 param placeholderContainerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
 
+@description('Azure AD tenant ID for admin staff SSO (/Login-Admin/SSO). Leave blank to leave it disabled.')
+param azureAdTenantId string = ''
+
+@description('Azure AD app registration (client) ID for the admin SSO app. Leave blank to leave it disabled.')
+param azureAdAdminClientId string = ''
+
+@description('Azure AD B2C tenant short name (the "contoso" in contoso.onmicrosoft.com) for storefront SSO (/Login/SSO). Leave blank to leave it disabled.')
+param azureB2cTenantName string = ''
+
+@description('Azure AD B2C tenant ID (GUID) for storefront SSO. Leave blank to leave it disabled.')
+param azureB2cTenantId string = ''
+
+@description('Azure AD B2C sign-up/sign-in user-flow (policy) name.')
+param azureB2cPolicyName string = 'B2C_1_signupsignin'
+
+@description('Azure AD B2C app registration (client) ID for the storefront SSO app. Leave blank to leave it disabled.')
+param azureB2cClientId string = ''
+
 var uniqueSuffix = uniqueString(resourceGroup().id, environmentName)
 var namePrefix = '${projectName}-${environmentName}'
 // Storage/Cosmos/ACR/Key Vault/Communication Services names must be
@@ -130,6 +148,16 @@ var backendPlainEnvVars = [
   { name: 'CORS_ALLOWED_ORIGINS', value: 'https://${namePrefix}-frontend.azurestaticapps.net,https://${namePrefix}-admin.azurestaticapps.net' }
   { name: 'ACS_EMAIL_SENDER_ADDRESS', value: 'DoNotReply@your-verified-domain.azurecomm.net' }
   { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsightsModule.outputs.appInsightsConnectionString }
+  // SSO tenant/policy/client IDs are not secrets (they're the same values
+  // baked into the public admin/storefront SPA configs) — only the OTP
+  // mailer, DB, payment, storage, and Redis credentials above are Key
+  // Vault-backed.
+  { name: 'AZURE_AD_TENANT_ID', value: azureAdTenantId }
+  { name: 'AZURE_AD_ADMIN_CLIENT_ID', value: azureAdAdminClientId }
+  { name: 'AZURE_B2C_TENANT_NAME', value: azureB2cTenantName }
+  { name: 'AZURE_B2C_TENANT_ID', value: azureB2cTenantId }
+  { name: 'AZURE_B2C_POLICY_NAME', value: azureB2cPolicyName }
+  { name: 'AZURE_B2C_CLIENT_ID', value: azureB2cClientId }
 ]
 
 // Maps env var name -> Key Vault secret URI. Secrets referenced here must

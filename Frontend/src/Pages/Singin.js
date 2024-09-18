@@ -9,15 +9,51 @@ import { BiHide } from "react-icons/bi";
 import { IoEye } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
+import { FaMicrosoft } from "react-icons/fa";
+import { useMsal } from "@azure/msal-react";
+import { loginRequest } from "../msalConfig";
 import Img from "../assets/GarageIllustration.svg";
 
 function SignIn({ setToken, Token, CheckToken }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { instance } = useMsal();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [hide, setHide] = useState(true);
   const [Loading, setLoading] = useState(false);
+  const [ssoLoading, setSsoLoading] = useState(false);
+
+  const handleMicrosoftSignIn = () => {
+    setSsoLoading(true);
+    instance
+      .loginPopup(loginRequest)
+      .then((result) => axios.post(`${BackendLink}/Login/SSO`, { idToken: result?.idToken }))
+      .then((res) => {
+        setSsoLoading(false);
+        if (res?.data?.status == 200) {
+          localStorage.setItem("token", res?.data?.token);
+          setToken(res?.data?.token);
+          const redirectTo = location?.state?.from?.pathname || "/";
+          navigate(redirectTo, { replace: true });
+        }
+        swal({
+          text: res?.data?.message,
+          button: { text: "Ok", closeModal: true },
+          icon: res?.data?.status == 200 ? "success" : "error",
+          time: 3000,
+        });
+      })
+      .catch((err) => {
+        setSsoLoading(false);
+        swal({
+          text: err?.response?.data?.message || err?.message || "Microsoft sign-in failed",
+          button: { text: "Ok", closeModal: true },
+          icon: "error",
+          time: 3000,
+        });
+      });
+  };
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -148,6 +184,22 @@ function SignIn({ setToken, Token, CheckToken }) {
                 onClick={handleSubmit}
               >
                 {Loading ? "Signing in..." : "Sign In"}
+              </button>
+
+              <div className="flex items-center gap-3 mt-6">
+                <div className="h-px flex-1 bg-[#d2d2d7]" />
+                <p className="text-sm text-[#6e6e73]">or</p>
+                <div className="h-px flex-1 bg-[#d2d2d7]" />
+              </div>
+
+              <button
+                type="button"
+                className="w-full mt-6 py-3.5 flex items-center justify-center gap-2 text-base md:text-lg font-medium text-[#1d1d1f] rounded-full border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-colors duration-200 disabled:opacity-60"
+                disabled={ssoLoading}
+                onClick={handleMicrosoftSignIn}
+              >
+                <FaMicrosoft />
+                {ssoLoading ? "Signing in..." : "Continue with Microsoft"}
               </button>
             </div>
           </div>

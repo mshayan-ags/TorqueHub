@@ -8,6 +8,10 @@ const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
 const { SaveImageDB } = require("./Image");
 const { default: mongoose } = require("mongoose");
 const { authLimiter } = require("../Middlewares/RateLimiters");
+const { generateOtp, otpExpiryDate } = require("../utils/otp");
+const { sendOtpEmail } = require("../utils/mailer");
+
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
 const router = Router();
 
@@ -52,7 +56,7 @@ router.post("/SignUp", async (req, res) => {
 						.save()
 						.then((data) => {
 							if (data?._id) {
-								const token = jwt.sign({ id: newUser?._id }, APP_SECRET);
+								const token = jwt.sign({ id: newUser?._id }, APP_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
 								res.status(200).json({
 									token,
@@ -123,7 +127,7 @@ router.post("/Guest-Checkout", async (req, res) => {
 				});
 			}
 
-			const token = jwt.sign({ id: searchUser?._id }, APP_SECRET);
+			const token = jwt.sign({ id: searchUser?._id }, APP_SECRET, { expiresIn: JWT_EXPIRES_IN });
 			return res.status(200).json({
 				token,
 				id: searchUser?._id,
@@ -146,7 +150,7 @@ router.post("/Guest-Checkout", async (req, res) => {
 		});
 
 		await newGuest.save();
-		const token = jwt.sign({ id: newGuest?._id }, APP_SECRET);
+		const token = jwt.sign({ id: newGuest?._id }, APP_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
 		res.status(200).json({
 			token,
@@ -173,19 +177,25 @@ router.post("/Verify-OTP", authLimiter, async (req, res) => {
 			return;
 		}
 
-		const searchUser = await User.findOne({ email: req.body?.email });
+		const searchUser = await User.findOne({ email: req.body?.email }).select("+otp +otpExpiresAt");
 
-		if (searchUser?._id && searchUser?.otp == req.body?.otp) {
+		const otpValid = searchUser?._id
+			&& searchUser?.otp
+			&& searchUser?.otp === req.body?.otp
+			&& searchUser?.otpExpiresAt
+			&& new Date(searchUser?.otpExpiresAt) > new Date();
+
+		if (otpValid) {
 			await User.updateOne(
 				{ _id: searchUser?._id },
-				{ isVerified: true },
+				{ isVerified: true, otp: null, otpExpiresAt: null },
 				{
 					new: false
 				}
 			)
 				.then((docs) => {
 					res.status(200).json({
-						id: docs?._id,
+						id: searchUser?._id,
 						status: 200,
 						message: "Your Account is Verified"
 					});
@@ -194,7 +204,7 @@ router.post("/Verify-OTP", authLimiter, async (req, res) => {
 					res.status(500).json({ status: 500, message: error });
 				});
 		} else {
-			res.status(401).json({ status: 401, message: "You Have Entered Wrong Otp or email" });
+			res.status(401).json({ status: 401, message: "You Have Entered Wrong Otp or email, or it has expired" });
 		}
 	} catch (error) {
 		res.status(500).json({ status: 500, message: error });
@@ -210,14 +220,16 @@ router.post("/Forget-Password", authLimiter, async (req, res) => {
 
 		const searchUser = await User.findOne({ email: req.body?.email });
 		if (searchUser?._id) {
+			const otp = generateOtp();
 			await User.updateOne(
 				{ _id: searchUser?._id },
-				{ isVerified: false, otp: otp, password: `${otp}` },
+				{ isVerified: false, otp, otpExpiresAt: otpExpiryDate() },
 				{
 					new: false
 				}
 			)
-				.then((docs) => {
+				.then(async (docs) => {
+					await sendOtpEmail(searchUser?.email, otp);
 					res.status(200).json({
 						status: 200,
 						message: "An Email is sent to your id"
@@ -245,14 +257,16 @@ router.post("/Resend-OTP", authLimiter, async (req, res) => {
 
 		const searchUser = await User.findOne({ email: req.body?.email });
 		if (searchUser?._id) {
+			const otp = generateOtp();
 			await User.updateOne(
 				{ _id: searchUser?._id },
-				{ isVerified: false, otp: otp },
+				{ isVerified: false, otp, otpExpiresAt: otpExpiryDate() },
 				{
 					new: false
 				}
 			)
-				.then((docs) => {
+				.then(async (docs) => {
+					await sendOtpEmail(searchUser?.email, otp);
 					res.status(200).json({
 						status: 200,
 						message: "An Email is sent to your id"
@@ -379,7 +393,7 @@ router.post("/Login", authLimiter, async (req, res) => {
 		if (searchUser?.password && searchUser?._id) {
 			const valid = await bcrypt.compare(Credentials?.password, searchUser?.password);
 			if (valid) {
-				const token = jwt.sign({ id: searchUser?._id }, APP_SECRET);
+				const token = jwt.sign({ id: searchUser?._id }, APP_SECRET, { expiresIn: JWT_EXPIRES_IN });
 				res.status(200).json({
 					token,
 					status: 200,

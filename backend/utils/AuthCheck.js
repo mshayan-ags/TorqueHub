@@ -5,7 +5,7 @@ const { Admin } = require("../models/Admin");
 const APP_SECRET = process.env.JWT_SECRET;
 
 function getTokenPayload(token) {
-  return jwt.verify(token, APP_SECRET);
+  return jwt.verify(token, APP_SECRET, { algorithms: ["HS256"] });
 }
 
 async function getUserId(req) {
@@ -56,4 +56,5 @@ module.exports = {
   APP_SECRET,
   getUserId,
   getAdminId,
+  getTokenPayload,
 };

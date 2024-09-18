@@ -7,6 +7,12 @@ import AuthProvider from "./context/Auth";
 import ProductProvider from "./context/Product";
 import CartProvider from "./context/Cart";
 import WishlistProvider from "./context/Wishlist";
+import CompareProvider from "./context/Compare";
+import { PublicClientApplication } from "@azure/msal-browser";
+import { MsalProvider } from "@azure/msal-react";
+import { msalConfig } from "./msalConfig";
+
+const msalInstance = new PublicClientApplication(msalConfig);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -15,7 +21,11 @@ root.render(
       <CartProvider>
         <ProductProvider>
           <WishlistProvider>
-            <App />
+            <CompareProvider>
+              <MsalProvider instance={msalInstance}>
+                <App />
+              </MsalProvider>
+            </CompareProvider>
           </WishlistProvider>
         </ProductProvider>
       </CartProvider>

@@ -89,6 +89,16 @@ az keyvault secret set --vault-name $KV --name ACS-EMAIL-CONNECTION-STRING \
 Then restart the Container App revision (or trigger a new deployment via
 `backend-deploy.yml`) so it picks the secrets up.
 
+## SSO (optional)
+
+`main.bicep` accepts `azureAdTenantId`/`azureAdAdminClientId` (admin staff
+SSO) and `azureB2cTenantName`/`azureB2cTenantId`/`azureB2cPolicyName`/
+`azureB2cClientId` (storefront SSO) parameters, wired straight through as
+plain (non-secret) Container App env vars — they're the same IDs already
+public in the admin/storefront SPA configs, not credentials. Leave them
+unset to deploy with both SSO routes disabled; the password-based login
+flows are unaffected either way.
+
 ## GitHub Actions secrets
 
 The three workflows under `.github/workflows/` expect these repository

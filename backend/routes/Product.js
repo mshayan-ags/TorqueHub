@@ -3,7 +3,7 @@ const { Image } = require("../models/Image");
 const { getAdminId } = require("../utils/AuthCheck");
 const { Router } = require("express");
 const { default: mongoose } = require("mongoose");
-const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
+const { CheckAllRequiredFieldsAvailaible, escapeRegex } = require("../utils/functions");
 const { SaveImageDB } = require("./Image");
 const { Brand } = require("../models/Brand");
 const { Category } = require("../models/Category");
@@ -486,6 +486,83 @@ router.get("/GetAllProducts", async (req, res) => {
 		} else {
 			res.status(401).json({ status: 401, message: message });
 		}
+	} catch (error) {
+		res.status(500).json({ status: 500, message: error });
+	}
+});
+
+router.get("/SearchProducts", async (req, res) => {
+	try {
+		const q = (req.query?.q || "").trim();
+		if (!q) {
+			return res.status(200).json({ status: 200, data: [] });
+		}
+
+		const pattern = new RegExp(escapeRegex(q), "i");
+		const [matchingBrands, matchingCategories] = await Promise.all([
+			Brand.find({ name: pattern }).select("_id"),
+			Category.find({ name: pattern }).select("_id")
+		]);
+
+		const results = await Product.find({
+			isArchive: false,
+			$or: [
+				{ name: pattern },
+				{ ProductCode: pattern },
+				{ description: pattern },
+				{ brand: { $in: matchingBrands.map((b) => b._id) } },
+				{ category: { $in: matchingCategories.map((c) => c._id) } }
+			]
+		}).populate(["images", "Discount", "category", "brand"]);
+
+		// Multi-word queries also get $text relevance scoring merged in —
+		// the regex above only finds substring matches, $text also matches
+		// queries whose words appear in a different order/field than typed
+		// (e.g. "front brake" matching a product named "Brake Pad - Front").
+		if (q.split(/\s+/).filter(Boolean).length >= 2) {
+			const seen = new Set(results.map((p) => p._id.toString()));
+			const textMatches = await Product.find(
+				{ isArchive: false, $text: { $search: q } },
+				{ score: { $meta: "textScore" } }
+			)
+				.sort({ score: { $meta: "textScore" } })
+				.populate(["images", "Discount", "category", "brand"]);
+
+			textMatches.forEach((p) => {
+				if (!seen.has(p._id.toString())) {
+					seen.add(p._id.toString());
+					results.push(p);
+				}
+			});
+		}
+
+		res.status(200).json({ status: 200, data: results });
+	} catch (error) {
+		res.status(500).json({ status: 500, message: error });
+	}
+});
+
+router.get("/RelatedProducts/:id", async (req, res) => {
+	try {
+		const Check = await CheckAllRequiredFieldsAvailaible(req.params, ["id"], res);
+		if (Check) {
+			return;
+		}
+
+		const product = await Product.findOne({ _id: req.params.id });
+		if (!product?._id) {
+			return res.status(404).json({ status: 404, message: "Product Not Found" });
+		}
+
+		const related = await Product.find({
+			_id: { $ne: product._id },
+			isArchive: false,
+			$or: [{ category: product.category }, { brand: product.brand }]
+		})
+			.limit(8)
+			.populate(["images", "Discount", "category", "brand"]);
+
+		res.status(200).json({ status: 200, data: related });
 	} catch (error) {
 		res.status(500).json({ status: 500, message: error });
 	}

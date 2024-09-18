@@ -190,7 +190,16 @@ async function seed() {
 	await User.create({ name: "Demo Customer", email: DEMO_USER_EMAIL, password: userPassword, stripeID: "seed-user" });
 
 	const adminPassword = await bcrypt.hash(DEMO_PASSWORD, 15);
-	await Admin.create({ name: "Demo Admin", email: DEMO_ADMIN_EMAIL, phoneNumber: 5551234567, password: adminPassword, Role: "Admin" });
+	// Full permissions so the seeded admin isn't locked out of any
+	// permission-gated route by default.
+	await Admin.create({
+		name: "Demo Admin",
+		email: DEMO_ADMIN_EMAIL,
+		phoneNumber: 5551234567,
+		password: adminPassword,
+		Role: "Admin",
+		Responsiblities: { manageProducts: true, manageOrders: true, manageUsers: true, manageAdmins: true, manageContent: true }
+	});
 
 	console.log("\nSeed complete.");
 	console.log(`  Customer login: ${DEMO_USER_EMAIL} / ${DEMO_PASSWORD}`);
