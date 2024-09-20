@@ -8,6 +8,7 @@ const { Product } = require('../models/Product')
 const { Brand } = require('../models/Brand')
 const { Category } = require('../models/Category')
 const { Admin } = require('../models/Admin')
+const { logAction } = require('../utils/auditLog')
 
 const router = Router()
 
@@ -123,6 +124,13 @@ router.post('/Create-Discount', async (req, res) => {
 			}
 			async function Response(params) {
 				if (saveDiscount?._id && ProductDiscounted?.length == ProductArr?.length) {
+					logAction({
+						adminId: id,
+						action: "Create-Discount",
+						targetType: "Discount",
+						targetId: saveDiscount?._id,
+						summary: `Created ${saveDiscount?.DiscountType} discount on ${ProductArr?.length} product(s)`
+					});
 					res.status(200).json({
 						status: 200,
 						message: "Discount Created in Succesfully"

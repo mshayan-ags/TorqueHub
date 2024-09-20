@@ -5,6 +5,7 @@ const { Router } = require("express");
 const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
 const { createSaleFromOrder } = require("../utils/orderFulfillment");
 const { authLimiter } = require("../Middlewares/RateLimiters");
+const { logAction } = require("../utils/auditLog");
 
 const router = Router();
 
@@ -106,6 +107,13 @@ router.post("/Update-Sale/:id", async (req, res) => {
 						id: req?.params?.id,
 						status: updateSale.status,
 						trackingDetails: updateSale.trackingDetails
+					});
+					logAction({
+						adminId: id,
+						action: "Update-Sale-Status",
+						targetType: "Sale",
+						targetId: searchSale?._id,
+						summary: `Set order ${searchSale?._id} status to "${updateSale?.status}"`
 					});
 					res.status(200).json({
 						status: 200,

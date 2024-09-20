@@ -7,6 +7,7 @@ const { SaveImageDB } = require("./Image");
 const { Admin } = require("../models/Admin");
 const { User } = require("../models/User");
 const { CouponRedeem } = require("../models/ReedemCoupon");
+const { logAction } = require("../utils/auditLog");
 
 const router = Router();
 
@@ -68,6 +69,13 @@ router.post("/Create-Coupon", async (req, res) => {
 				{ new: false }
 			);
 			if (saveCoupon?._id && updateAdmin?.acknowledged) {
+				logAction({
+					adminId: id,
+					action: "Create-Coupon",
+					targetType: "Coupon",
+					targetId: saveCoupon?._id,
+					summary: `Created coupon "${saveCoupon?.code}"`
+				});
 				res.status(200).json({
 					status: 200,
 					message: "Coupon Created in Succesfully"
