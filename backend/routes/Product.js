@@ -4,6 +4,7 @@ const { getAdminId } = require("../utils/AuthCheck");
 const { Router } = require("express");
 const { default: mongoose } = require("mongoose");
 const { CheckAllRequiredFieldsAvailaible, escapeRegex } = require("../utils/functions");
+const { logAction } = require("../utils/auditLog");
 const { SaveImageDB } = require("./Image");
 const { Brand } = require("../models/Brand");
 const { Category } = require("../models/Category");
@@ -139,6 +140,13 @@ router.post("/Create-Product", async (req, res) => {
 
 				if (saveProduct?._id && updatecategory?.acknowledged && updatebrand?.acknowledged) {
 					linkAllImagesToProducts()
+					logAction({
+						adminId: id,
+						action: "Create-Product",
+						targetType: "Product",
+						targetId: saveProduct?._id,
+						summary: `Created product "${saveProduct?.name}"`
+					});
 					res.status(200).json({
 						status: 200,
 						message: "Product Created in Succesfully"
@@ -234,6 +242,13 @@ router.post("/Update-Product/:id", async (req, res) => {
 				);
 
 				if (saveProduct?.acknowledged) {
+					logAction({
+						adminId: id,
+						action: "Update-Product",
+						targetType: "Product",
+						targetId: searchProduct?._id,
+						summary: `Updated product "${updateProduct?.name}"`
+					});
 					res.status(200).json({
 						status: 200,
 						message: "Product Updated Succesfully"
@@ -286,7 +301,14 @@ router.post("/Delete-Product/:id", async (req, res) => {
 					}
 				);
 
-				if (saveProduct?._id) {
+				if (saveProduct?.acknowledged) {
+					logAction({
+						adminId: id,
+						action: "Delete-Product",
+						targetType: "Product",
+						targetId: searchProduct?._id,
+						summary: `Archived product "${searchProduct?.name}"`
+					});
 					res.status(200).json({
 						status: 200,
 						message: "Product Deleted in Succesfully"
