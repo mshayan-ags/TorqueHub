@@ -5,6 +5,7 @@ const { Router } = require("express");
 const { default: mongoose } = require("mongoose");
 const { CheckAllRequiredFieldsAvailaible, escapeRegex } = require("../utils/functions");
 const { logAction } = require("../utils/auditLog");
+const { requirePermission } = require("../Middlewares/RequirePermission");
 const { SaveImageDB } = require("./Image");
 const { Brand } = require("../models/Brand");
 const { Category } = require("../models/Category");
@@ -22,6 +23,68 @@ async function saveimagesArr({ ImgArr, id, res }) {
 			res.status(500).json({ status: 500, message: image?.Error });
 		}
 	});
+}
+
+// Extracted from the old /Create-Product handler so /Bulk-Create-Products
+// (CSV import) can create products through the exact same validation/save
+// path instead of duplicating it. Deliberately excludes image handling —
+// that stays in /Create-Product's own route body, and CSV rows never carry
+// images (out of scope; images are a manual follow-up step for bulk-imported
+// products). Throws a plain Error with a user-facing .message on failure.
+async function createOneProduct(Credentials) {
+	const requiredFields = [
+		"name", "description", "price", "quantity", "currentColor",
+		"currentSize", "currentMaterial", "specifications", "brand",
+		"category", "ProductCode"
+	];
+	const missingField = requiredFields.find((f) => Credentials?.[f] == null || Credentials?.[f] === "");
+	if (missingField) {
+		throw new Error(`Please Fill the Required Field ${missingField}`);
+	}
+
+	const productKey = `${Credentials?.ProductCode}-${Credentials?.currentColor}-${Credentials?.currentSize}-${Credentials?.currentMaterial}`;
+	const searchProduct = await Product.find({ Product: productKey });
+	if (searchProduct.length > 0) {
+		throw new Error("This Product Already Exist");
+	}
+
+	const searchBrand = await Brand.findOne({ _id: Credentials?.brand });
+	const searchCategory = await Category.findOne({ _id: Credentials?.category });
+	if (!searchBrand?._id || !searchCategory?._id) {
+		throw new Error("Please Check Your Data");
+	}
+
+	const newProduct = new Product({
+		Product: productKey,
+		ProductCode: Credentials?.ProductCode,
+		name: Credentials?.name,
+		description: Credentials?.description,
+		price: Credentials?.price,
+		quantity: Credentials?.quantity,
+		currentColor: Credentials?.currentColor,
+		currentSize: Credentials?.currentSize,
+		currentMaterial: Credentials?.currentMaterial,
+		condition: Credentials?.condition,
+		specifications: Credentials?.specifications,
+		brand: new mongoose.Types.ObjectId(Credentials?.brand),
+		category: new mongoose.Types.ObjectId(Credentials?.category),
+		fitment: Array.isArray(Credentials?.fitment) ? Credentials.fitment : [],
+		technical_specs: {
+			weight: Credentials?.weight,
+			dimensions: Credentials?.dimensions,
+			warranty: Credentials?.warranty
+		}
+	});
+
+	const saveProduct = await newProduct.save();
+
+	const searchbrandProducts = await Product.find({ brand: Credentials?.brand }).select("_id");
+	await Brand.updateOne({ _id: Credentials?.brand }, { Product: searchbrandProducts }, { new: false });
+
+	const searchcategoryProducts = await Product.find({ category: Credentials?.category }).select("_id");
+	await Category.updateOne({ _id: Credentials?.category }, { Product: searchcategoryProducts }, { new: false });
+
+	return saveProduct;
 }
 
 router.post("/Create-Product", async (req, res) => {
@@ -54,109 +117,51 @@ router.post("/Create-Product", async (req, res) => {
 				return;
 			}
 
-			const searchProduct = await Product.find({
-				Product: `${Credentials?.ProductCode}-${Credentials?.currentColor}-${Credentials?.currentSize}-${Credentials?.currentMaterial}`
-			});
-			if (searchProduct.length > 0) {
-				res.status(400).json({ status: 400, message: "This Product Already Exist" });
-				return;
+			let saveProduct;
+			try {
+				saveProduct = await createOneProduct(Credentials);
+			} catch (err) {
+				return res.status(400).json({ status: 400, message: err?.message || "Something Went Wrong" });
 			}
-			const searchBrand = await Brand.findOne({ _id: Credentials?.brand });
-			const searchCategory = await Category.findOne({ _id: Credentials?.category });
 
-			if (searchCategory?._id && searchBrand?._id && searchProduct.length <= 0) {
-				const newProduct = new Product({
-					Product: `${Credentials?.ProductCode}-${Credentials?.currentColor}-${Credentials?.currentSize}-${Credentials?.currentMaterial}`,
-					ProductCode: Credentials?.ProductCode,
-					name: Credentials?.name,
-					description: Credentials?.description,
-					price: Credentials?.price,
-					quantity: Credentials?.quantity,
-					currentColor: Credentials?.currentColor,
-					currentSize: Credentials?.currentSize,
-					currentMaterial: Credentials?.currentMaterial,
-					condition: Credentials?.condition,
-					specifications: Credentials?.specifications,
-					brand: new mongoose.Types.ObjectId(Credentials?.brand),
-					category: new mongoose.Types.ObjectId(Credentials?.category),
-					technical_specs: {
-						weight: Credentials?.weight,
-						dimensions: Credentials?.dimensions,
-						warranty: Credentials?.warranty
+			const ImgArr = [...Credentials?.images];
+
+			if (ImgArr?.length > 0) {
+				async function connectImgArrDb() {
+					const uniqueimages = await Image.find({
+						Product: saveProduct?._id
+					}).select("_id");
+
+					saveProduct.images = uniqueimages;
+
+					if (uniqueimages.length != saveProduct.images.length) {
+						setTimeout(() => {
+							connectImgArrDb();
+						}, 500);
 					}
+				}
+				await saveimagesArr({
+					ImgArr,
+					id: saveProduct?._id,
+					res
 				});
-
-				const ImgArr = [...Credentials?.images];
-
-				if (ImgArr?.length > 0) {
-					async function connectImgArrDb() {
-						const uniqueimages = await Image.find({
-							Product: newProduct?._id
-						}).select("_id");
-
-						newProduct.images = uniqueimages;
-
-						if (uniqueimages.length != newProduct.images.length) {
-							setTimeout(() => {
-								connectImgArrDb();
-							}, 500);
-						}
-					}
-					await saveimagesArr({
-						ImgArr,
-						id: newProduct?._id,
-						res
-					});
-					setTimeout(async () => {
-						await connectImgArrDb();
-					}, 2000);
-				}
-
-				const saveProduct = await newProduct.save();
-
-				const searchbrandProducts = await Product.find({ brand: Credentials?.brand }).select("_id");
-				const updatebrand = await Brand.updateOne(
-					{ _id: Credentials?.brand },
-					{
-						Product: searchbrandProducts
-					},
-					{
-						new: false
-					}
-				);
-
-				const searchcategoryProducts = await Product.find({
-					category: Credentials?.category
-				}).select("_id");
-				const updatecategory = await Category.updateOne(
-					{ _id: Credentials?.category },
-					{
-						Product: searchcategoryProducts
-					},
-					{
-						new: false
-					}
-				);
-
-				if (saveProduct?._id && updatecategory?.acknowledged && updatebrand?.acknowledged) {
-					linkAllImagesToProducts()
-					logAction({
-						adminId: id,
-						action: "Create-Product",
-						targetType: "Product",
-						targetId: saveProduct?._id,
-						summary: `Created product "${saveProduct?.name}"`
-					});
-					res.status(200).json({
-						status: 200,
-						message: "Product Created in Succesfully"
-					});
-				} else {
-					res.status(500).json({ status: 500, message: "Something Went Wrong" });
-				}
-			} else {
-				res.status(401).json({ status: 401, message: "Please Check Your Data" });
+				setTimeout(async () => {
+					await connectImgArrDb();
+				}, 2000);
 			}
+
+			linkAllImagesToProducts()
+			logAction({
+				adminId: id,
+				action: "Create-Product",
+				targetType: "Product",
+				targetId: saveProduct?._id,
+				summary: `Created product "${saveProduct?.name}"`
+			});
+			res.status(200).json({
+				status: 200,
+				message: "Product Created in Succesfully"
+			});
 		} else {
 			res.status(401).json({ status: 401, message: message });
 		}
@@ -199,6 +204,7 @@ router.post("/Update-Product/:id", async (req, res) => {
 					currentMaterial: Credentials?.currentMaterial || searchProduct?.currentMaterial,
 					condition: Credentials?.condition || searchProduct?.condition,
 					specifications: Credentials?.specifications || searchProduct?.specifications,
+					fitment: Array.isArray(Credentials?.fitment) ? Credentials.fitment : searchProduct?.fitment,
 					technical_specs: {
 						weight: Credentials?.weight || searchProduct?.weight,
 						dimensions: Credentials?.dimensions || searchProduct?.dimensions,
@@ -585,6 +591,52 @@ router.get("/RelatedProducts/:id", async (req, res) => {
 			.populate(["images", "Discount", "category", "brand"]);
 
 		res.status(200).json({ status: 200, data: related });
+	} catch (error) {
+		res.status(500).json({ status: 500, message: error });
+	}
+});
+
+// CSV import: client-side parses/previews the file and posts plain row
+// objects here. Brand/category are identified by name (human-editable CSV),
+// resolved to ObjectIds here, then handed to the same createOneProduct()
+// used by /Create-Product. Images are explicitly out of scope for CSV rows
+// — imported products need images added as a manual follow-up step.
+router.post("/Bulk-Create-Products", requirePermission("manageProducts"), async (req, res) => {
+	try {
+		const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+		if (!rows.length) {
+			return res.status(400).json({ status: 400, message: "No rows to import" });
+		}
+
+		const results = [];
+		for (let i = 0; i < rows.length; i++) {
+			const row = rows[i];
+			try {
+				const brandDoc = await Brand.findOne({ name: row?.brand });
+				const categoryDoc = await Category.findOne({ name: row?.category });
+				if (!brandDoc?._id || !categoryDoc?._id) {
+					throw new Error(`Unknown brand "${row?.brand}" or category "${row?.category}"`);
+				}
+
+				const saved = await createOneProduct({
+					...row,
+					brand: brandDoc._id.toString(),
+					category: categoryDoc._id.toString()
+				});
+				results.push({ row: i + 1, ProductCode: row?.ProductCode, success: true, id: saved?._id });
+			} catch (err) {
+				results.push({ row: i + 1, ProductCode: row?.ProductCode, success: false, message: err?.message || "Something Went Wrong" });
+			}
+		}
+
+		logAction({
+			adminId: req.adminId,
+			action: "Bulk-Create-Products",
+			targetType: "Product",
+			summary: `Bulk-imported ${results.filter((r) => r.success).length}/${rows.length} products`
+		});
+
+		res.status(200).json({ status: 200, data: results });
 	} catch (error) {
 		res.status(500).json({ status: 500, message: error });
 	}

@@ -121,6 +121,21 @@ const ProductSchema = new mongoose.Schema(
 		images: {
 			type: [mongoose.Schema.Types.ObjectId],
 			ref: "Image"
+		},
+		// Embedded rather than a separate collection — mirrors the existing
+		// color[]/size[]/material[] precedent, and the storefront already
+		// loads the full catalog client-side so there's no need for a
+		// server-side fitment query.
+		fitment: {
+			type: [
+				{
+					make: { type: String, required: true, trim: true },
+					model: { type: String, required: true, trim: true },
+					yearStart: { type: Number, required: true },
+					yearEnd: { type: Number, required: true }
+				}
+			],
+			default: []
 		}
 	},
 	{

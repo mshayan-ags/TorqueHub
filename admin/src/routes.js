@@ -13,6 +13,7 @@ import {
   MdSettings,
   MdRateReview,
   MdArticle,
+  MdHistory,
 } from "react-icons/md";
 
 import Address from "views/admin/Address/List";
@@ -39,6 +40,7 @@ import Select from "views/admin/Product/Select";
 import Blog from "views/admin/Blog/List";
 import AddBlog from "views/admin/Blog/index";
 import Review from "views/admin/Review/List";
+import AuditLog from "views/admin/AuditLog/List";
 import Settings from "views/admin/Settings/index";
 
 const routes = [
@@ -196,6 +198,13 @@ const routes = [
     path: "Review",
     icon: <MdRateReview className="h-6 w-6" />,
     component: <Review />,
+  },
+  {
+    name: "Audit Log",
+    layout: "/admin",
+    path: "AuditLog",
+    icon: <MdHistory className="h-6 w-6" />,
+    component: <AuditLog />,
   },
   {
     name: "Settings",

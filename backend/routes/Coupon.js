@@ -25,10 +25,20 @@ const evaluateRestrictions = (restriction, user) => {
 		return user?.Sale?.length <= maxOrders;
 	}
 
+	// Points-redemption coupons (see POST /Redeem-Points) are minted
+	// per-user and must never be usable by anyone else.
+	if (restriction.startsWith('only_user_')) {
+		const allowedUserId = restriction.replace('only_user_', '');
+		return String(user?._id) === allowedUserId;
+	}
+
 	if (restriction == "true") {
 		return true
 	}
 };
+
+const POINTS_PER_DOLLAR = 100;
+const MIN_REDEEM_POINTS = 500;
 
 
 
@@ -176,6 +186,56 @@ router.post("/Reedem-Coupon", async (req, res) => {
 				status: 500,
 				message: `Please Change your ${Object.keys(error?.keyValue)[0]} as it's not unique`
 			});
+		} else {
+			res.status(500).json({ status: 500, message: error });
+		}
+	}
+});
+
+router.post("/Redeem-Points", async (req, res) => {
+	try {
+		const { id, message } = await getUserId(req);
+		if (!id) {
+			return res.status(401).json({ status: 401, message: message });
+		}
+
+		const pointsToRedeem = Number(req.body?.points);
+		if (!pointsToRedeem || pointsToRedeem < MIN_REDEEM_POINTS) {
+			return res.status(400).json({ status: 400, message: `Minimum redemption is ${MIN_REDEEM_POINTS} points` });
+		}
+
+		const user = await User.findOne({ _id: id });
+		if (!user?._id || user?.points < pointsToRedeem) {
+			return res.status(400).json({ status: 400, message: "You don't have enough points" });
+		}
+
+		// Only whole $-per-POINTS_PER_DOLLAR units are convertible — any
+		// remainder stays in the user's balance rather than being lost.
+		const discountValue = Math.floor(pointsToRedeem / POINTS_PER_DOLLAR);
+		const pointsSpent = discountValue * POINTS_PER_DOLLAR;
+
+		const code = `POINTS-${id.toString().slice(-6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+		const newCoupon = new Coupon({
+			code,
+			discountType: "FixedAmount",
+			discountValue,
+			minimumPurchase: 1,
+			expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+			restrictions: `only_user_${id}`,
+			isActive: true
+		});
+		await newCoupon.save();
+
+		await User.updateOne({ _id: id }, { points: user.points - pointsSpent }, { new: false });
+
+		res.status(200).json({
+			status: 200,
+			message: `Redeemed ${pointsSpent} points for a $${discountValue} coupon`,
+			data: newCoupon
+		});
+	} catch (error) {
+		if (error?.code == 11000) {
+			res.status(500).json({ status: 500, message: "Please try again" });
 		} else {
 			res.status(500).json({ status: 500, message: error });
 		}
