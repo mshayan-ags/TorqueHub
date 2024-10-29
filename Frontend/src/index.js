@@ -8,6 +8,7 @@ import ProductProvider from "./context/Product";
 import CartProvider from "./context/Cart";
 import WishlistProvider from "./context/Wishlist";
 import CompareProvider from "./context/Compare";
+import VehicleProvider from "./context/Vehicle";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
 import { msalConfig } from "./msalConfig";
@@ -22,9 +23,11 @@ root.render(
         <ProductProvider>
           <WishlistProvider>
             <CompareProvider>
-              <MsalProvider instance={msalInstance}>
-                <App />
-              </MsalProvider>
+              <VehicleProvider>
+                <MsalProvider instance={msalInstance}>
+                  <App />
+                </MsalProvider>
+              </VehicleProvider>
             </CompareProvider>
           </WishlistProvider>
         </ProductProvider>

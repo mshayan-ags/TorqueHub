@@ -359,6 +359,48 @@ const CartProvider = ({ children, Token, CheckToken }) => {
   };
 
 
+  // Converts loyalty points into a real, single-use Coupon server-side, then
+  // applies it through the exact same ReedeemCoupon flow used for any other
+  // coupon code — no separate "points discount" code path to maintain.
+  const RedeemPoints = async (points) => {
+    if (!Token) {
+      swal({
+        text: "Please Login To Redeem Points",
+        button: { text: "Ok", closeModal: true },
+        icon: "warning",
+        time: 3000
+      });
+      return;
+    }
+    try {
+      const res = await axios.post(`${BackendLink}/Redeem-Points`, { points }, {
+        headers: {
+          Authorization: Token
+            ? `${Token}`
+            : `${localStorage.getItem("token")}`,
+        },
+      });
+      if (res?.data?.status == 200 && res?.data?.data?.code) {
+        await ReedeemCoupon(res?.data?.data?.code);
+      }
+      swal({
+        text: res?.data?.message,
+        button: { text: "Ok", closeModal: true },
+        icon: res?.data?.status == 200 ? "success" : "error",
+        time: 3000
+      });
+    } catch (err) {
+      swal({
+        text: err?.response?.data?.message
+          ? err?.response?.data?.message
+          : "There was some Error",
+        button: { text: "Ok", closeModal: true },
+        icon: "error",
+        time: 3000
+      });
+    }
+  };
+
   const GetAllCouponsUser = () => {
     axios
       .get(`${BackendLink}/GetAllCouponsUser`, {
@@ -431,6 +473,7 @@ const CartProvider = ({ children, Token, CheckToken }) => {
         Order, setOrder,
         Coupon, setCoupon,
         ReedeemCoupon,
+        RedeemPoints,
         AllCoupon, CouponError, GetAllCouponsUser,
         getCouponDiscount,
         GetUsedCouponsUser,

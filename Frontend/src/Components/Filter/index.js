@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { withProductContext } from "../../context/Product";
+import { withVehicleContext } from "../../context/Vehicle";
 
 function capitalizeWords(str) {
 	return str
@@ -10,7 +11,7 @@ function capitalizeWords(str) {
 		.join(' '); // Join words back into a single string
 }
 
-function Filter({ AllCategories, GetAllCategories, AllBrand, GetAllBrand, setFilterValue, Materials, AllColors, AllSizes }) {
+function Filter({ AllCategories, GetAllCategories, AllBrand, GetAllBrand, setFilterValue, Materials, AllColors, AllSizes, Vehicle }) {
 
 	useEffect(() => {
 		GetAllBrand()
@@ -27,6 +28,7 @@ function Filter({ AllCategories, GetAllCategories, AllBrand, GetAllBrand, setFil
 	const [MinPrice, setMinPrice] = useState(null)
 	const [MaxPrice, setMaxPrice] = useState(null)
 	const [Weight, setWeight] = useState(null)
+	const [FitsVehicle, setFitsVehicle] = useState(false)
 
 
 	useEffect(() => {
@@ -38,8 +40,9 @@ function Filter({ AllCategories, GetAllCategories, AllBrand, GetAllBrand, setFil
 			MinPrice: MinPrice,
 			MaxPrice: MaxPrice,
 			Weight: Weight,
+			FitsVehicle: FitsVehicle,
 		})
-	}, [Category, Material, Brand, Color, MinPrice, MaxPrice, Weight])
+	}, [Category, Material, Brand, Color, MinPrice, MaxPrice, Weight, FitsVehicle])
 
 	const [visibleCount, setVisibleCount] = useState({
 		Category: 5,
@@ -55,6 +58,14 @@ function Filter({ AllCategories, GetAllCategories, AllBrand, GetAllBrand, setFil
 	return (
 		<div className="flex flex-col items-start justify-start pt-[7px] px-0 pb-0 box-border">
 			<div className="flex flex-col items-start justify-start">
+				{Vehicle && <div className="flex flex-col items-start justify-start pt-0 px-0 pb-[28px] gap-[10px_0px] border-b-[1px] border-solid border-neutral-color-10">
+					<div className="flex flex-row items-center justify-start gap-[0px_10px]">
+						<div className={`h-4 w-4 relative rounded ${FitsVehicle ? "bg-[#f97316]" : "bg-white"} box-border overflow-hidden shrink-0 border-[1px] border-solid border-neutral-color-20`} onClick={() => {
+							setFitsVehicle(!FitsVehicle)
+						}} />
+						<div className="relative text-[12px] md:text-[15px]">Fits my {Vehicle?.year} {Vehicle?.make} {Vehicle?.model}</div>
+					</div>
+				</div>}
 				{AllCategories?.length > 0 && <div className="flex flex-col items-start justify-start pt-0 px-0 pb-[28px] gap-[10px_0px] border-b-[1px] border-solid border-neutral-color-10">
 					<div className="relative text-[15px] md:text-[20px] font-[600] leading-[24px] flex items-end box-border pr-5">
 						Categories
@@ -189,4 +200,4 @@ function Filter({ AllCategories, GetAllCategories, AllBrand, GetAllBrand, setFil
 	);
 }
 
-export default withProductContext(Filter);
+export default withVehicleContext(withProductContext(Filter));

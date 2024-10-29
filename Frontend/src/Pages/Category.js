@@ -6,6 +6,7 @@ import Filter from "../Components/Filter";
 import Footer from "../Components/Footer";
 import Headers from "../Components/Header/index";
 import { withProductContext } from "../context/Product";
+import { withVehicleContext } from "../context/Vehicle";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { BackendLink } from "../link";
 import { FaFilter, FaTh, FaThList, FaBoxOpen } from "react-icons/fa";
@@ -21,8 +22,9 @@ const initialValue = {
     MinPrice: null,
     MaxPrice: null,
     Weight: null,
+    FitsVehicle: false,
 }
-function Category({ AllProduct, GetAllProduct }) {
+function Category({ AllProduct, GetAllProduct, productFitsVehicle, Vehicle }) {
     const { name } = useParams()
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
@@ -100,10 +102,13 @@ function Category({ AllProduct, GetAllProduct }) {
         if (FilterValue.MaxPrice) {
             filteredProducts = filteredProducts.filter(product => product.price <= FilterValue.MaxPrice);
         }
+        if (FilterValue.FitsVehicle) {
+            filteredProducts = filteredProducts.filter(product => productFitsVehicle(product));
+        }
 
         setProducts(filteredProducts);
         setFrom(0)
-    }, [AllProduct, SearchResults, FilterValue, name, q]);
+    }, [AllProduct, SearchResults, FilterValue, name, q, Vehicle]);
 
     return (
         <React.Fragment>
@@ -316,4 +321,4 @@ function Category({ AllProduct, GetAllProduct }) {
         </React.Fragment >
     )
 }
-export default withProductContext(Category)
+export default withVehicleContext(withProductContext(Category))

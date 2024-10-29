@@ -4,6 +4,7 @@ import { withAuthContext } from "../../context/Auth";
 import { withCartContext } from "../../context/Cart";
 import { withWishlistContext } from "../../context/Wishlist";
 import { withCompareContext } from "../../context/Compare";
+import VehicleSelector from "../VehicleSelector";
 import Logo from "../../assets/TorqueHubLogo.svg";
 import "./index.css";
 import {
@@ -79,6 +80,7 @@ function Header({ Token, setToken, currUser, MenuOpen, setMenuOpen, Cart, Wishli
               {link.label}
             </Link>
           ))}
+          <VehicleSelector />
         </nav>
 
         {/* Right Icons */}
@@ -228,6 +230,7 @@ function Header({ Token, setToken, currUser, MenuOpen, setMenuOpen, Cart, Wishli
             placeholder="Search parts..."
             className="w-full px-4 py-2.5 text-sm border border-[#d2d2d7] rounded-full outline-none focus:border-[#f97316] transition-colors"
           />
+          <VehicleSelector />
           <Link
             to="/Compare"
             onClick={() => setMenuOpen(false)}
