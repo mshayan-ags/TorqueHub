@@ -14,6 +14,7 @@ import {
   MdRateReview,
   MdArticle,
   MdHistory,
+  MdAssignmentReturn,
 } from "react-icons/md";
 
 import Address from "views/admin/Address/List";
@@ -41,6 +42,7 @@ import Blog from "views/admin/Blog/List";
 import AddBlog from "views/admin/Blog/index";
 import Review from "views/admin/Review/List";
 import AuditLog from "views/admin/AuditLog/List";
+import ReturnRequest from "views/admin/ReturnRequest/List";
 import Settings from "views/admin/Settings/index";
 
 const routes = [
@@ -198,6 +200,13 @@ const routes = [
     path: "Review",
     icon: <MdRateReview className="h-6 w-6" />,
     component: <Review />,
+  },
+  {
+    name: "Return Requests",
+    layout: "/admin",
+    path: "ReturnRequest",
+    icon: <MdAssignmentReturn className="h-6 w-6" />,
+    component: <ReturnRequest />,
   },
   {
     name: "Audit Log",

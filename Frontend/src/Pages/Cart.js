@@ -16,8 +16,9 @@ import { MdDiscount } from "react-icons/md"
 
 function CartPage({ Cart, getTotal, Token, CheckToken, getSubTotal, getDiscount, ReedeemCoupon, AllCoupon, Coupon, GetAllCouponsUser, getCouponDiscount, getTotalAfterCoupon,
     ScheduleOrder,
-    setScheduleOrder }) {
+    setScheduleOrder, currUser, RedeemPoints }) {
     const [CouponCode, setCouponCode] = useState("")
+    const [PointsToRedeem, setPointsToRedeem] = useState("")
     const navigate = useNavigate()
     useEffect(() => {
         window.scrollTo({
@@ -254,6 +255,39 @@ function CartPage({ Cart, getTotal, Token, CheckToken, getSubTotal, getDiscount,
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Redeem Points */}
+                                {Token && (
+                                    <div className="mt-8 pt-6 border-t border-[#d2d2d7]">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <MdDiscount className="w-5 h-5 text-[#1d1d1f]" />
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-[#1d1d1f]">Redeem Points</h3>
+                                                <p className="text-sm text-[#6e6e73]">
+                                                    You have {currUser?.points || 0} points (100 points = $1). Minimum redemption: 500 points.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <input
+                                                value={PointsToRedeem}
+                                                onChange={(e) => setPointsToRedeem(e?.target?.value)}
+                                                placeholder="Points to redeem"
+                                                type="number"
+                                                className="flex-1 px-5 py-3.5 rounded-full outline-none border border-[#d2d2d7] focus:border-[#f97316] text-[#1d1d1f] text-base font-medium transition-colors duration-200 bg-white"
+                                            />
+                                            <button
+                                                className="bg-[#1d1d1f] hover:bg-black text-white px-6 md:px-8 py-3.5 rounded-full text-sm md:text-base font-medium transition-colors duration-200 whitespace-nowrap"
+                                                onClick={() => {
+                                                    RedeemPoints(Number(PointsToRedeem));
+                                                    setPointsToRedeem("");
+                                                }}
+                                            >
+                                                Redeem
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

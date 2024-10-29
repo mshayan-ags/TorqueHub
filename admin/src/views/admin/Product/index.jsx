@@ -47,6 +47,7 @@ const initialState = {
   color: [],
   size: [],
   material: [],
+  fitment: [],
 }
 const Product = ({ Token, CheckToken,
   AllBrand,
@@ -65,6 +66,20 @@ const Product = ({ Token, CheckToken,
 
   function handleChange(name, value) {
     setState({ ...state, [name]: value })
+  }
+
+  function addFitmentRow() {
+    setState({ ...state, fitment: [...(state?.fitment || []), { make: "", model: "", yearStart: "", yearEnd: "" }] })
+  }
+
+  function updateFitmentRow(index, field, value) {
+    const fitment = [...(state?.fitment || [])]
+    fitment[index] = { ...fitment[index], [field]: value }
+    setState({ ...state, fitment })
+  }
+
+  function removeFitmentRow(index) {
+    setState({ ...state, fitment: (state?.fitment || []).filter((_, i) => i !== index) })
   }
 
   const navigate = useNavigate();
@@ -506,6 +521,54 @@ const Product = ({ Token, CheckToken,
             disabled={id != "New"}
             onChange={(e) => handleChange("quantity", e.target.value)}
           />
+
+          <h4 className="col-span-4 mb-2.5 text-2xl font-bold text-navy-700 dark:text-white">
+            Vehicle Fitment
+          </h4>
+          <div className="col-span-4 flex flex-col gap-3">
+            {state?.fitment?.map((row, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                <input
+                  placeholder="Make"
+                  value={row?.make}
+                  onChange={(e) => updateFitmentRow(index, "make", e.target.value)}
+                  className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                />
+                <input
+                  placeholder="Model"
+                  value={row?.model}
+                  onChange={(e) => updateFitmentRow(index, "model", e.target.value)}
+                  className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                />
+                <input
+                  placeholder="Year Start"
+                  type="number"
+                  value={row?.yearStart}
+                  onChange={(e) => updateFitmentRow(index, "yearStart", e.target.value)}
+                  className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                />
+                <input
+                  placeholder="Year End"
+                  type="number"
+                  value={row?.yearEnd}
+                  onChange={(e) => updateFitmentRow(index, "yearEnd", e.target.value)}
+                  className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                />
+                <button
+                  onClick={() => removeFitmentRow(index)}
+                  className="rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-2"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={addFitmentRow}
+              className="w-fit rounded-xl border border-brand-500 text-brand-500 px-6 py-2 text-sm font-medium hover:bg-brand-50"
+            >
+              + Add Fitment
+            </button>
+          </div>
 
           <div className="col-span-4">
             <Upload

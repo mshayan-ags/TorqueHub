@@ -9,6 +9,7 @@ import swal from "sweetalert"
 import { withAuthContext } from "../context/Auth"
 import { io } from "socket.io-client"
 import OrderSummary from "../Components/OrderSummary"
+import ReturnRequestPanel from "../Components/ReturnRequest"
 
 function OrderTracking({ Token, CheckToken }) {
     const { id } = useParams()
@@ -99,6 +100,7 @@ function OrderTracking({ Token, CheckToken }) {
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <BreadCrumbContainer />
                     <OrderSummary state={state} Live={Live} />
+                    <ReturnRequestPanel sale={state} />
                 </div>
                 <Footer />
             </div>

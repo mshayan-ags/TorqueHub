@@ -16,6 +16,7 @@ import CouponProvider from "context/Coupon";
 import BlogProvider from "context/Blog";
 import ReviewProvider from "context/Review";
 import AuditLogProvider from "context/AuditLog";
+import ReturnRequestProvider from "context/ReturnRequest";
 import SocketProvider from "context/Socket";
 
 import { PublicClientApplication } from "@azure/msal-browser";
@@ -42,9 +43,11 @@ root.render(
                           <BlogProvider>
                             <ReviewProvider>
                               <AuditLogProvider>
-                                <MsalProvider instance={msalInstance}>
-                                  <App />
-                                </MsalProvider>
+                                <ReturnRequestProvider>
+                                  <MsalProvider instance={msalInstance}>
+                                    <App />
+                                  </MsalProvider>
+                                </ReturnRequestProvider>
                               </AuditLogProvider>
                             </ReviewProvider>
                           </BlogProvider>
