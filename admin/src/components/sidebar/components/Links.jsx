@@ -2,13 +2,23 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import DashIcon from "components/icons/DashIcon";
+import { withProductContext } from "context/Product";
 // chakra imports
+
+// Non-archived products at or below this remaining quantity show a badge
+// on the Product nav item. quantity is stored as a String on the model, so
+// it's cast with Number(...) before comparing.
+const LOW_STOCK_THRESHOLD = 5;
 
 export function SidebarLinks(props) {
   // Chakra color mode
   let location = useLocation();
 
-  const { routes } = props;
+  const { routes, AllProduct } = props;
+
+  const lowStockCount = (AllProduct || []).filter(
+    (p) => !p?.isArchive && Number(p?.quantity) <= LOW_STOCK_THRESHOLD
+  ).length;
 
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
@@ -46,6 +56,11 @@ export function SidebarLinks(props) {
                 >
                   {route.name}
                 </p>
+                {route.path === "Product" && lowStockCount > 0 && (
+                  <span className="ml-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    {lowStockCount}
+                  </span>
+                )}
               </li>
               {activeRoute(route.path) ? (
                 <div class="absolute right-0 top-px h-9 w-1 rounded-lg bg-brand-500 dark:bg-brand-400" />
@@ -60,4 +75,4 @@ export function SidebarLinks(props) {
   return createLinks(routes);
 }
 
-export default SidebarLinks;
+export default withProductContext(SidebarLinks);
