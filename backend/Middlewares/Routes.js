@@ -18,10 +18,12 @@ const { GetImage } = require("../routes/Image");
 const Health = require("../routes/Health");
 const AuditLog = require("../routes/AuditLog");
 const ReturnRequest = require("../routes/ReturnRequest");
+const AbandonedCart = require("../routes/AbandonedCart");
 
 app.use(Health);
 app.use(AuditLog);
 app.use(ReturnRequest);
+app.use(AbandonedCart);
 app.use(User);
 app.use(UserSSO);
 app.use(Sale);
