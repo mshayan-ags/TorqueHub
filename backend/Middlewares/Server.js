@@ -84,6 +84,14 @@ if (process.env.NODE_ENV !== "test") {
     });
 }
 
+// Abandoned-cart reminder (hourly) + low-stock digest (daily) — see
+// utils/cronJobs.js. Skipped under tests same as the other boot-time side
+// effects above; the underlying functions are still directly unit-testable.
+if (process.env.NODE_ENV !== "test") {
+  const { startCronJobs } = require("../utils/cronJobs");
+  startCronJobs();
+}
+
 module.exports = {
   httpServer,
   port,
