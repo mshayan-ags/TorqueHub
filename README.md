@@ -1,4 +1,4 @@
-# TorqueHub — Complete Repository Documentation
+# TorqueHub 
 
 **Primary Language:** JavaScript  
 
