@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useRef, useState } from "react";
 import { BackendLink } from "../link";
 import { withAuthContext } from "./Auth";
 import swal from "sweetalert";
@@ -153,6 +153,29 @@ const CartProvider = ({ children, Token, CheckToken }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Cart]);
+
+  // Debounced abandoned-cart sync: every AddToCart/UpdateItemCart/
+  // RemoveItemCart mutation funnels through setCart, so reacting to Cart
+  // here covers all of them without hooking each one individually.
+  // Logged-in users only — guests have no known identity to email later.
+  const syncCartTimeoutRef = useRef(null);
+  useEffect(() => {
+    if (!Token) return undefined;
+    if (syncCartTimeoutRef.current) clearTimeout(syncCartTimeoutRef.current);
+    syncCartTimeoutRef.current = setTimeout(() => {
+      axios
+        .post(`${BackendLink}/Sync-Cart`, { items: Cart }, {
+          headers: {
+            Authorization: Token ? `${Token}` : `${localStorage.getItem("token")}`,
+          },
+        })
+        .catch(() => {
+          // Best-effort — abandoned-cart tracking is a reminder nicety, never
+          // something that should surface an error to the shopper.
+        });
+    }, 2000);
+    return () => clearTimeout(syncCartTimeoutRef.current);
+  }, [Cart, Token]);
 
 
   // Phase F7: guest checkout support. GuestSession is held only in memory
