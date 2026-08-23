@@ -65,7 +65,6 @@ const Brand = ({ Token, CheckToken }) => {
         });
     } else {
       CheckToken();
-      GetBrandInfo()
     }
   };
 
