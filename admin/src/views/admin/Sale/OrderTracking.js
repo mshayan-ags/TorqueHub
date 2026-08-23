@@ -124,8 +124,6 @@ function OrderTracking({ Token, CheckToken }) {
                 time: 3000,
             });
             CheckToken();
-            handleSubmit()
-
         }
     };
 
