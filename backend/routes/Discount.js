@@ -185,7 +185,10 @@ router.post('/Update-Discount/:id', requirePermission("manageContent"), async (r
 						Credentials?.startDate || searchDiscount?.startDate,
 					endDate:
 						Credentials?.endDate || searchDiscount?.endDate,
-					isActive: Credentials?.isActive || searchDiscount?.isActive,
+					// Nullish, not ||: isActive is a boolean, and a caller explicitly
+					// sending false to deactivate a discount must not be overridden by
+					// the fallback (false || x evaluates to x, silently ignoring it).
+					isActive: Credentials?.isActive ?? searchDiscount?.isActive,
 				}
 
 				const saveDiscount = await Discount.updateOne(
@@ -197,7 +200,7 @@ router.post('/Update-Discount/:id', requirePermission("manageContent"), async (r
 						new: false,
 					},
 				)
-				if (saveDiscount?._id) {
+				if (saveDiscount?.acknowledged) {
 					res.status(200).json({
 						status: 200,
 						message: 'Discount Updated in Succesfully',
