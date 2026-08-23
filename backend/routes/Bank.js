@@ -197,23 +197,33 @@ router.post('/confirm-payment-intent', async (req, res) => {
 					}
 					const checkBank = await CreateBank(Bank)
 					if (checkBank?.id) {
-						const method = searchBank()?.stripeID || paymentMethod?.id || 'pm_card_visa'
+						// This card was just attached above, so its own id is the
+						// payment method to confirm with - no need to re-look-up the
+						// Bank record just created (searchBank()'s stale-closure result
+						// was never actually awaited here before, so it was always
+						// undefined and bankId was never actually returned to the
+						// frontend, meaning the resulting Sale never linked back to it).
+						const method = paymentMethod?.id || 'pm_card_visa'
 						const paymentIntent = await stripe.paymentIntents.confirm(intent, {
 							payment_method: method,
 							return_url: 'https://www.example.com',
 						});
-						res.status(200).json({ clientSecret: paymentIntent.client_secret, bankId: searchBank()?.id });
+						res.status(200).json({ clientSecret: paymentIntent.client_secret, bankId: checkBank?.id });
 					} else {
 						res.status(500).json({ error: 'An error occurred while confirming the payment intent.' });
 					}
 				}
 			} else {
-				const method = searchBank()?.stripeID || paymentMethod?.id || 'pm_card_visa'
+				// getBank (awaited above) is this card's already-saved Bank record -
+				// reuse it directly instead of the previous unawaited searchBank()
+				// call, which always resolved to a Promise (not the Bank document),
+				// so both its stripeID and id were always undefined.
+				const method = getBank?.stripeID || paymentMethod?.id || 'pm_card_visa'
 				const paymentIntent = await stripe.paymentIntents.confirm(intent, {
 					payment_method: method,
 					return_url: 'https://www.example.com',
 				});
-				res.status(200).json({ clientSecret: paymentIntent.client_secret, bankId: searchBank()?.id });
+				res.status(200).json({ clientSecret: paymentIntent.client_secret, bankId: getBank?.id });
 			}
 		} else {
 			res.status(401).json({ status: 401, message: message });
