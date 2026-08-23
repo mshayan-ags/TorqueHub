@@ -8,6 +8,7 @@ const { Admin } = require("../models/Admin");
 const { User } = require("../models/User");
 const { CouponRedeem } = require("../models/ReedemCoupon");
 const { logAction } = require("../utils/auditLog");
+const { requirePermission } = require("../Middlewares/RequirePermission");
 
 const router = Router();
 
@@ -42,7 +43,7 @@ const MIN_REDEEM_POINTS = 500;
 
 
 
-router.post("/Create-Coupon", async (req, res) => {
+router.post("/Create-Coupon", requirePermission("manageContent"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
@@ -242,7 +243,7 @@ router.post("/Redeem-Points", async (req, res) => {
 	}
 });
 
-router.post("/Update-Coupon/:id", async (req, res) => {
+router.post("/Update-Coupon/:id", requirePermission("manageContent"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
