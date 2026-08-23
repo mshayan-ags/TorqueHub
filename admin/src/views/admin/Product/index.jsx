@@ -128,8 +128,6 @@ const Product = ({ Token, CheckToken,
         });
     } else {
       CheckToken();
-      GetProductInfo()
-
     }
   };
 
@@ -268,7 +266,6 @@ const Product = ({ Token, CheckToken,
         time: 3000,
       });
       CheckToken();
-      handleRemove();
     }
   };
 
