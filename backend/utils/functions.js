@@ -11,22 +11,15 @@ function filterArrayOfObjectAndRemoveRepetitions(arr, property) {
 }
 
 async function CheckAllRequiredFieldsAvailaible(req, fields, res) {
-  let Msg;
-  return await fields.some((a, i) => {
-    if (
-      req?.[a] == null ||
-      req?.[a] == undefined ||
-      req?.[a] == "" ||
-      !req?.[a] == null
-    ) {
+  return await fields.some((a) => {
+    const value = req?.[a];
+    if (value === null || value === undefined || value === "") {
       res
         .status(500)
         .json({ status: 500, message: `Please Fill the Required Field ${a}` });
-
-      Msg = "Error";
-      i = fields.length;
       return true;
     }
+    return false;
   });
 }
 
