@@ -264,7 +264,10 @@ router.post("/Update-Coupon/:id", requirePermission("manageContent"), async (req
 					minimumPurchase: Credentials?.minimumPurchase || searchCoupon?.minimumPurchase,
 					expirationDate: Credentials?.expirationDate || searchCoupon?.expirationDate,
 					restrictions: Credentials?.restrictions || searchCoupon?.restrictions,
-					isActive: Credentials?.isActive || searchCoupon?.isActive,
+					// Nullish, not ||: isActive is a boolean, and a caller explicitly
+					// sending false to deactivate a coupon must not be overridden by
+					// the fallback (false || x evaluates to x, silently ignoring it).
+					isActive: Credentials?.isActive ?? searchCoupon?.isActive,
 				};
 
 				const saveCoupon = await Coupon.updateOne(
