@@ -6,6 +6,7 @@ const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
 const { createSaleFromOrder } = require("../utils/orderFulfillment");
 const { authLimiter } = require("../Middlewares/RateLimiters");
 const { logAction } = require("../utils/auditLog");
+const { requirePermission } = require("../Middlewares/RequirePermission");
 
 const router = Router();
 
@@ -65,7 +66,7 @@ router.post("/Create-Sale", async (req, res) => {
 	}
 });
 
-router.post("/Update-Sale/:id", async (req, res) => {
+router.post("/Update-Sale/:id", requirePermission("manageOrders"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
