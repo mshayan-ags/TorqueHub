@@ -13,8 +13,11 @@ function formatShortDate(dateStr) {
 // Relabeled "Orders" — there's no real visitor/traffic analytics concept in
 // this app, but /Dashboard-Stats already computes a daily order count that
 // fits the same "small bar chart + big number" shape.
-const DailyTraffic = ({ ordersByDay, totalOrders }) => {
+const DailyTraffic = ({ ordersByDay }) => {
   const hasData = ordersByDay?.length > 0;
+  const totalRecentOrders = hasData
+    ? ordersByDay.reduce((sum, d) => sum + (Number(d?.count) || 0), 0)
+    : null;
 
   const chartData = hasData
     ? [{ name: "Orders", data: ordersByDay.map((d) => Number(d?.count) || 0) }]
@@ -38,7 +41,7 @@ const DailyTraffic = ({ ordersByDay, totalOrders }) => {
             Orders (last 14 days)
           </p>
           <p className="text-[34px] font-bold text-navy-700 dark:text-white">
-            {totalOrders != null ? totalOrders : "2,579"}{" "}
+            {totalRecentOrders != null ? totalRecentOrders : "2,579"}{" "}
             <span className="text-sm font-medium leading-6 text-gray-600">
               Orders
             </span>
