@@ -71,7 +71,6 @@ const Products = ({
         time: 3000,
       });
       CheckToken();
-      handleSubmit();
     }
   };
 
