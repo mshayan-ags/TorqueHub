@@ -71,8 +71,6 @@ const Coupon = ({ Token, CheckToken }) => {
         });
     } else {
       CheckToken();
-      GetCouponInfo()
-
     }
   };
 
