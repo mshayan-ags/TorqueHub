@@ -9,10 +9,11 @@ const { Brand } = require('../models/Brand')
 const { Category } = require('../models/Category')
 const { Admin } = require('../models/Admin')
 const { logAction } = require('../utils/auditLog')
+const { requirePermission } = require('../Middlewares/RequirePermission')
 
 const router = Router()
 
-router.post('/Create-Discount', async (req, res) => {
+router.post('/Create-Discount', requirePermission("manageContent"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req)
@@ -158,7 +159,7 @@ router.post('/Create-Discount', async (req, res) => {
 	}
 })
 
-router.post('/Update-Discount/:id', async (req, res) => {
+router.post('/Update-Discount/:id', requirePermission("manageContent"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req)
