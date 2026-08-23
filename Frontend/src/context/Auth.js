@@ -32,6 +32,13 @@ const AuthProvider = ({ children }) => {
         })
         .catch((err) => {
           console.log(err?.message);
+          // An expired/invalid token: clear it so RequireAuth/Header stop
+          // treating this session as logged in instead of silently keeping
+          // a token the backend will keep rejecting.
+          if (err?.response?.status === 401) {
+            localStorage.removeItem("token");
+            setToken("");
+          }
         });
     }
   };
