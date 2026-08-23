@@ -429,14 +429,6 @@ router.post("/Remove-Product-Accesories/:ProductCode", requirePermission("manage
 				if (Credentials?.MaterialProductId)
 					material = material.filter((item) => item.toString() != Credentials?.MaterialProductId);
 
-				material.filter((item) => {
-					console.log(
-						item.toString() != Credentials?.MaterialProductId,
-						item,
-						Credentials?.MaterialProductId
-					);
-					if (item != new mongoose.Types.ObjectId(Credentials?.MaterialProductId)) return item;
-				});
 				const saveProduct = await Product.updateMany(
 					{
 						ProductCode: req?.params?.ProductCode
