@@ -75,7 +75,6 @@ const Discount = ({ Token, CheckToken }) => {
         });
     } else {
       CheckToken();
-      GetDiscountInfo();
     }
   };
 
