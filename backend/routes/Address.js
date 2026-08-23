@@ -141,7 +141,7 @@ router.post("/Update-Address/:id", async (req, res) => {
 					}
 				);
 
-				if (saveAddress?._id && updateUser?.acknowledged) {
+				if (saveAddress?.acknowledged && updateUser?.acknowledged) {
 					res.status(200).json({
 						status: 200,
 						message: "Address Updated in Succesfully"
@@ -210,7 +210,7 @@ router.post("/Delete-Address/:id", async (req, res) => {
 					}
 				);
 
-				if (saveAddress?._id && updateUser?.acknowledged) {
+				if (saveAddress?.acknowledged && updateUser?.acknowledged) {
 					res.status(200).json({
 						status: 200,
 						message: "Address Deleted in Succesfully"

@@ -76,4 +76,54 @@ describe("Ownership checks", () => {
 
 		expect(deleteRes.status).toBe(403);
 	});
+
+	test("the owner can update their own address", async () => {
+		const token = await createUser("address-owner-update@example.com");
+
+		const createRes = await request(app)
+			.post("/Create-Address")
+			.set("Authorization", `Bearer ${token}`)
+			.send({
+				full_name: "A",
+				phone_number: "123",
+				address_line1: "1 Main St",
+				city: "City",
+				state: "State",
+				postal_code: "00000",
+				country: "Country"
+			});
+		const addressId = createRes.body.id;
+
+		const updateRes = await request(app)
+			.post(`/Update-Address/${addressId}`)
+			.set("Authorization", `Bearer ${token}`)
+			.send({ full_name: "Updated Name" });
+
+		expect(updateRes.status).toBe(200);
+	});
+
+	test("the owner can delete their own address", async () => {
+		const token = await createUser("address-owner-delete@example.com");
+
+		const createRes = await request(app)
+			.post("/Create-Address")
+			.set("Authorization", `Bearer ${token}`)
+			.send({
+				full_name: "A",
+				phone_number: "123",
+				address_line1: "1 Main St",
+				city: "City",
+				state: "State",
+				postal_code: "00000",
+				country: "Country"
+			});
+		const addressId = createRes.body.id;
+
+		const deleteRes = await request(app)
+			.post(`/Delete-Address/${addressId}`)
+			.set("Authorization", `Bearer ${token}`)
+			.send({});
+
+		expect(deleteRes.status).toBe(200);
+	});
 });
