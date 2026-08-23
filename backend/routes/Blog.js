@@ -4,6 +4,7 @@ const { Router } = require("express");
 const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
 const { SaveImageDB } = require("./Image");
 const { default: mongoose } = require("mongoose");
+const { requirePermission } = require("../Middlewares/RequirePermission");
 
 const router = Router();
 
@@ -64,7 +65,7 @@ router.get("/BlogInfo/:id", async (req, res) => {
 	}
 });
 
-router.post("/Create-Blog", async (req, res) => {
+router.post("/Create-Blog", requirePermission("manageContent"), async (req, res) => {
 	try {
 		const { id, message } = await getAdminId(req);
 		if (!id) {
@@ -101,7 +102,7 @@ router.post("/Create-Blog", async (req, res) => {
 	}
 });
 
-router.post("/Update-Blog/:id", async (req, res) => {
+router.post("/Update-Blog/:id", requirePermission("manageContent"), async (req, res) => {
 	try {
 		const { id, message } = await getAdminId(req);
 		if (!id) {
@@ -136,7 +137,7 @@ router.post("/Update-Blog/:id", async (req, res) => {
 	}
 });
 
-router.post("/Delete-Blog/:id", async (req, res) => {
+router.post("/Delete-Blog/:id", requirePermission("manageContent"), async (req, res) => {
 	try {
 		const { id, message } = await getAdminId(req);
 		if (!id) {
