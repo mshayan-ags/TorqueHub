@@ -249,7 +249,13 @@ const CartProvider = ({ children, Token, CheckToken }) => {
     return session;
   };
 
-  const PlaceOrder = async (navigate, bank, paymentMethod, guestInfo) => {
+  // stripePaymentIntentId is optional (only card payments have one) — when
+  // present, it's forwarded to /Create-Sale so createSaleFromOrder's own
+  // idempotency check (same intent id -> return the existing sale) also
+  // covers this synchronous call, not just the async Stripe webhook. Without
+  // it, a card payment gets a Sale created twice: once here, right after the
+  // frontend sees the payment succeed, and again when the webhook fires.
+  const PlaceOrder = async (navigate, bank, paymentMethod, guestInfo, stripePaymentIntentId) => {
     try {
       let authToken = Token || localStorage.getItem("token");
       let addressId = Address;
@@ -274,6 +280,7 @@ const CartProvider = ({ children, Token, CheckToken }) => {
         "paymentMethod": paymentMethod,
         Notes: Notes,
         Total: getTotal(),
+        ...(stripePaymentIntentId ? { stripePaymentIntentId } : {}),
       }
 
       if (new Date(ScheduleOrder) > new Date()) {

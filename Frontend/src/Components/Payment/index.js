@@ -140,7 +140,7 @@ function CheckoutForm({ Token, Cart, Address, Coupon, Notes, getTotalAfterCoupon
         return;
       }
 
-      await PlaceOrder(navigate, confirmData?.bankId, "Card", GuestInfo);
+      await PlaceOrder(navigate, confirmData?.bankId, "Card", GuestInfo, paymentIntent?.id);
     } catch (err) {
       setCardError(
         err?.response?.data?.message ||

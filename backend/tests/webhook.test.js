@@ -135,4 +135,42 @@ describe("Stripe webhook idempotency", () => {
 		expect(sale?._id).toBeDefined();
 		expect(sale?.Bank).toBeUndefined();
 	});
+
+	test("the frontend's direct /Create-Sale call and a later webhook for the same intent don't double-create a Sale", async () => {
+		// Mirrors the real card-payment flow: Payment/index.js calls
+		// PlaceOrder -> /Create-Sale synchronously right after Stripe confirms,
+		// then the async payment_intent.succeeded webhook fires later for the
+		// same intent. Both must resolve to the same Sale, not two.
+		const { token, id: userId } = await createUser("direct-then-webhook-user@example.com");
+		const orderPayload = await buildOrderPayload(userId);
+		orderPayload.Bank = null;
+
+		const intentId = `pi_test_direct_${Date.now()}`;
+
+		const directRes = await request(app)
+			.post("/Create-Sale")
+			.set("Authorization", `Bearer ${token}`)
+			.send({ ...orderPayload, stripePaymentIntentId: intentId });
+		expect(directRes.status).toBe(200);
+
+		const stripe = await getStripeClient();
+		const payload = JSON.stringify({
+			id: "evt_test_direct",
+			type: "payment_intent.succeeded",
+			data: { object: { id: intentId } }
+		});
+		const header = stripe.webhooks.generateTestHeaderString({
+			payload,
+			secret: process.env.STRIPE_WEBHOOK_SECRET
+		});
+		const webhookRes = await request(app)
+			.post("/Stripe-Webhook")
+			.set("Content-Type", "application/json")
+			.set("stripe-signature", header)
+			.send(payload);
+		expect(webhookRes.status).toBe(200);
+
+		const sales = await Sale.find({ User: userId });
+		expect(sales.length).toBe(1);
+	});
 });
