@@ -20,10 +20,16 @@ const SaleSchema = new mongoose.Schema(
 			ref: "Address",
 			required: true
 		},
+		// Not required: card payments via Stripe Elements (the storefront's
+		// only real payment path) never carry a saved Bank record — orderPayload
+		// explicitly sends Bank: null for these, and orderFulfillment.js already
+		// treats a missing Bank as valid (Bank: searchBank?._id ? ... : undefined).
+		// This field being required here meant every card-payment Sale — created
+		// from the Stripe webhook — failed Mongoose validation and was silently
+		// never created, even though Stripe had already charged the customer.
 		Bank: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: "Bank",
-			required: true
+			ref: "Bank"
 		},
 		Review: {
 			type: mongoose.Schema.Types.ObjectId,

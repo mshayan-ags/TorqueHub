@@ -100,4 +100,39 @@ describe("Stripe webhook idempotency", () => {
 		const sales = await Sale.find({ stripePaymentIntentId: intentId });
 		expect(sales.length).toBe(1);
 	});
+
+	test("a card payment (Bank: null in orderPayload, the real storefront flow) still creates a Sale", async () => {
+		const { id: userId } = await createUser("card-payment-user@example.com");
+		const orderPayload = await buildOrderPayload(userId);
+		orderPayload.Bank = null;
+
+		const intentId = `pi_test_card_${Date.now()}`;
+		await PendingSale.create({
+			User: userId,
+			stripePaymentIntentId: intentId,
+			orderPayload
+		});
+
+		const stripe = await getStripeClient();
+		const payload = JSON.stringify({
+			id: "evt_test_card",
+			type: "payment_intent.succeeded",
+			data: { object: { id: intentId } }
+		});
+		const header = stripe.webhooks.generateTestHeaderString({
+			payload,
+			secret: process.env.STRIPE_WEBHOOK_SECRET
+		});
+
+		const res = await request(app)
+			.post("/Stripe-Webhook")
+			.set("Content-Type", "application/json")
+			.set("stripe-signature", header)
+			.send(payload);
+		expect(res.status).toBe(200);
+
+		const sale = await Sale.findOne({ stripePaymentIntentId: intentId });
+		expect(sale?._id).toBeDefined();
+		expect(sale?.Bank).toBeUndefined();
+	});
 });
