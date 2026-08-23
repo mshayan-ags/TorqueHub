@@ -3,10 +3,11 @@ const { getAdminId } = require("../utils/AuthCheck");
 const { Router } = require("express");
 const { default: mongoose } = require("mongoose");
 const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
+const { requirePermission } = require("../Middlewares/RequirePermission");
 
 const router = Router();
 
-router.post("/Create-Category", async (req, res) => {
+router.post("/Create-Category", requirePermission("manageContent"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
@@ -52,7 +53,7 @@ router.post("/Create-Category", async (req, res) => {
 	}
 });
 
-router.post("/Update-Category/:id", async (req, res) => {
+router.post("/Update-Category/:id", requirePermission("manageContent"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
