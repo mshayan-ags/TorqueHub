@@ -129,4 +129,16 @@ describe("Admin RBAC", () => {
 		const created = await Admin.findOne({ email: "new-admin@example.com" });
 		expect(created?._id).toBeDefined();
 	});
+
+	test("/Update-Admin returns HTTP 200 on success, matching its own status:200 body", async () => {
+		const { token } = await createAdmin("self-update-admin@example.com");
+
+		const res = await request(app)
+			.post("/Update-Admin")
+			.set("Authorization", `Bearer ${token}`)
+			.send({ name: "Updated Name" });
+
+		expect(res.status).toBe(200);
+		expect(res.body.status).toBe(200);
+	});
 });

@@ -112,7 +112,7 @@ router.post("/Update-Admin", async (req, res) => {
 					new: false
 				})
 					.then((docs) => {
-						res.status(401).json({
+						res.status(200).json({
 							status: 200,
 							message: "Your Admin has been Updated"
 						});
