@@ -260,6 +260,18 @@ router.get("/Dashboard-Stats", async (req, res) => {
 		});
 		const revenueByDay = Object.entries(dayMap).map(([date, amount]) => ({ date, amount }));
 
+		const orderDayMap = {};
+		for (let i = 13; i >= 0; i--) {
+			const d = new Date(now);
+			d.setDate(d.getDate() - i);
+			orderDayMap[d.toISOString().slice(0, 10)] = 0;
+		}
+		sales.forEach((s) => {
+			const key = new Date(s?.created_at).toISOString().slice(0, 10);
+			if (orderDayMap[key] !== undefined) orderDayMap[key] += 1;
+		});
+		const ordersByDay = Object.entries(orderDayMap).map(([date, count]) => ({ date, count }));
+
 		const weekMap = {};
 		sales.forEach((s) => {
 			const key = isoWeekKey(new Date(s?.created_at));
@@ -287,6 +299,7 @@ router.get("/Dashboard-Stats", async (req, res) => {
 				totalOrders,
 				ordersByStatus,
 				revenueByDay,
+				ordersByDay,
 				revenueByWeek,
 				revenueByCategory,
 				recentOrders: sales.slice(0, 10)
