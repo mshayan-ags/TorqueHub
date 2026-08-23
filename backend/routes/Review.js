@@ -4,6 +4,7 @@ const { Sale } = require("../models/Sale");
 const { getUserId, getAdminId } = require("../utils/AuthCheck");
 const { Router } = require("express");
 const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
+const { requirePermission } = require("../Middlewares/RequirePermission");
 
 const router = Router();
 
@@ -74,7 +75,7 @@ router.get("/GetApprovedReviews/:targetType/:targetId", async (req, res) => {
 	}
 });
 
-router.post("/Approve-Review/:id", async (req, res) => {
+router.post("/Approve-Review/:id", requirePermission("manageContent"), async (req, res) => {
 	try {
 		const { id, message } = await getAdminId(req);
 		if (!id) {
@@ -88,7 +89,7 @@ router.post("/Approve-Review/:id", async (req, res) => {
 	}
 });
 
-router.post("/Hide-Review/:id", async (req, res) => {
+router.post("/Hide-Review/:id", requirePermission("manageContent"), async (req, res) => {
 	try {
 		const { id, message } = await getAdminId(req);
 		if (!id) {
