@@ -6,7 +6,23 @@ import {
 } from "variables/charts";
 import { MdBarChart } from "react-icons/md";
 
-const WeeklyRevenue = () => {
+const WeeklyRevenue = ({ revenueByWeek }) => {
+  const hasData = revenueByWeek?.length > 0;
+
+  const chartData = hasData
+    ? [{ name: "Revenue", data: revenueByWeek.map((w) => Number(w?.amount) || 0), color: "#5E37FF" }]
+    : barChartDataWeeklyRevenue;
+
+  const chartOptions = hasData
+    ? {
+        ...barChartOptionsWeeklyRevenue,
+        xaxis: {
+          ...barChartOptionsWeeklyRevenue.xaxis,
+          categories: revenueByWeek.map((w) => w?.week),
+        },
+      }
+    : barChartOptionsWeeklyRevenue;
+
   return (
     <Card extra="flex flex-col bg-white w-full rounded-3xl py-6 px-2 text-center">
       <div className="mb-auto flex items-center justify-between px-6">
@@ -21,8 +37,8 @@ const WeeklyRevenue = () => {
       <div className="md:mt-16 lg:mt-0">
         <div className="h-[250px] w-full xl:h-[350px]">
           <BarChart
-            chartData={barChartDataWeeklyRevenue}
-            chartOptions={barChartOptionsWeeklyRevenue}
+            chartData={chartData}
+            chartOptions={chartOptions}
           />
         </div>
       </div>

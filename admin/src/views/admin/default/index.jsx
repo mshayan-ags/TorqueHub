@@ -166,8 +166,8 @@ const Dashboard = ({
       {/* Charts */}
 
       <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
-        <TotalSpent />
-        <WeeklyRevenue />
+        <TotalSpent revenueByDay={stats?.revenueByDay} totalRevenue={stats?.totalRevenue} />
+        <WeeklyRevenue revenueByWeek={stats?.revenueByWeek} />
       </div>
 
       {/* Tables & Charts */}
@@ -181,8 +181,8 @@ const Dashboard = ({
         {/* Traffic chart & Pie Chart */}
 
         <div className="grid grid-cols-1 gap-5 rounded-[20px] md:grid-cols-2">
-          <DailyTraffic />
-          <PieChartCard />
+          <DailyTraffic ordersByDay={stats?.ordersByDay} totalOrders={stats?.totalOrders} />
+          <PieChartCard revenueByCategory={stats?.revenueByCategory} />
         </div>
 
         {/* Complex Table , Task & Calendar */}
