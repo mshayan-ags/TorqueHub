@@ -87,7 +87,7 @@ async function createOneProduct(Credentials) {
 	return saveProduct;
 }
 
-router.post("/Create-Product", async (req, res) => {
+router.post("/Create-Product", requirePermission("manageProducts"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
@@ -178,7 +178,7 @@ router.post("/Create-Product", async (req, res) => {
 	}
 });
 
-router.post("/Update-Product/:id", async (req, res) => {
+router.post("/Update-Product/:id", requirePermission("manageProducts"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
@@ -281,7 +281,7 @@ router.post("/Update-Product/:id", async (req, res) => {
 	}
 });
 
-router.post("/Delete-Product/:id", async (req, res) => {
+router.post("/Delete-Product/:id", requirePermission("manageProducts"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
@@ -340,7 +340,7 @@ router.post("/Delete-Product/:id", async (req, res) => {
 	}
 });
 
-router.post("/Add-Product-Accesories/:ProductCode", async (req, res) => {
+router.post("/Add-Product-Accesories/:ProductCode", requirePermission("manageProducts"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
@@ -404,7 +404,7 @@ router.post("/Add-Product-Accesories/:ProductCode", async (req, res) => {
 	}
 });
 
-router.post("/Remove-Product-Accesories/:ProductCode", async (req, res) => {
+router.post("/Remove-Product-Accesories/:ProductCode", requirePermission("manageProducts"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
