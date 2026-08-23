@@ -4,10 +4,11 @@ const { Router } = require("express");
 const { default: mongoose } = require("mongoose");
 const { CheckAllRequiredFieldsAvailaible } = require("../utils/functions");
 const { SaveImageDB } = require("./Image");
+const { requirePermission } = require("../Middlewares/RequirePermission");
 
 const router = Router();
 
-router.post("/Create-Brand", async (req, res) => {
+router.post("/Create-Brand", requirePermission("manageContent"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
@@ -70,7 +71,7 @@ router.post("/Create-Brand", async (req, res) => {
 	}
 });
 
-router.post("/Update-Brand/:id", async (req, res) => {
+router.post("/Update-Brand/:id", requirePermission("manageContent"), async (req, res) => {
 	try {
 
 		const { id, message } = await getAdminId(req);
