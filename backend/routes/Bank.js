@@ -320,7 +320,7 @@ router.post("/Update-Bank/:id", async (req, res) => {
 					}
 				);
 
-				if (saveBank?._id && updateUser?.acknowledged) {
+				if (saveBank?.acknowledged && updateUser?.acknowledged) {
 					res.status(200).json({
 						status: 200,
 						message: "Bank Updated in Succesfully"
@@ -389,7 +389,7 @@ router.post("/Delete-Bank/:id", async (req, res) => {
 					}
 				);
 
-				if (saveBank?._id && updateUser?.acknowledged) {
+				if (saveBank?.acknowledged && updateUser?.acknowledged) {
 					res.status(200).json({
 						status: 200,
 						message: "Bank Deleted in Succesfully"
